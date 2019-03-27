@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search>
+  <entry>
+    <title><![CDATA[Hello World]]></title>
+    <url>%2F2019%2F03%2F27%2Fhello-world%2F</url>
+    <content type="text"><![CDATA[Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub. Quick StartCreate a new post1$ hexo new "My New Post" More info: Writing Run server1$ hexo server More info: Server Generate static files1$ hexo generate More info: Generating Deploy to remote sites1$ hexo deploy More info: Deployment]]></content>
+  </entry>
+  <entry>
+    <title><![CDATA[postName]]></title>
+    <url>%2F2013%2F12%2F02%2Ftest%2F</url>
+    <content type="text"><![CDATA[NEW: DevDocs now comes with syntax highlighting. http://devdocs.io @DevDocstwitter.com/devdocs/status/356095192085962752 Do not just seek happiness for yourself. Seek happiness for all. Through kindness. Through mercy. David LevithanWide Awake Every interaction is both precious and an opportunity to delight. Seth GodinWelcome to Island Marketing title url link text1code snippet \]]></content>
+      <categories>
+        <category>hello</category>
+        <category>nihao</category>
+      </categories>
+  </entry>
+</search>
