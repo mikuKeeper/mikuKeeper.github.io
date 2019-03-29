@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2019-03-28T09:39:38.377Z</updated>
+  <updated>2019-03-29T02:52:58.045Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -21,7 +21,7 @@
     <link href="http://yoursite.com/2019/03/28/%E6%B5%8B%E8%AF%95%E7%94%A8%E6%96%87%E7%AB%A0/"/>
     <id>http://yoursite.com/2019/03/28/测试用文章/</id>
     <published>2019-03-28T09:36:45.000Z</published>
-    <updated>2019-03-28T09:39:38.377Z</updated>
+    <updated>2019-03-29T02:52:58.045Z</updated>
     
     <content type="html"><![CDATA[<p>zddddd<br>这是测试征文</p>]]></content>
     
@@ -36,6 +36,8 @@
     </summary>
     
       <category term="222" scheme="http://yoursite.com/categories/222/"/>
+    
+      <category term="4444" scheme="http://yoursite.com/categories/222/4444/"/>
     
     
       <category term="ttt" scheme="http://yoursite.com/tags/ttt/"/>
