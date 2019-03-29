@@ -1,26 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title><![CDATA[测试用文章]]></title>
-    <url>%2F2019%2F03%2F28%2F%E6%B5%8B%E8%AF%95%E7%94%A8%E6%96%87%E7%AB%A0%2F</url>
-    <content type="text"><![CDATA[zddddd这是测试征文]]></content>
+    <title><![CDATA[关于淘宝二维码问题的一些想法]]></title>
+    <url>%2F2019%2F03%2F29%2F%E5%85%B3%E4%BA%8E%E6%B7%98%E5%AE%9D%E4%BA%8C%E7%BB%B4%E7%A0%81%E9%92%93%E9%B1%BC%E9%97%AE%E9%A2%98%E7%9A%84%E4%B8%80%E4%BA%9B%E6%83%B3%E6%B3%95%2F</url>
+    <content type="text"><![CDATA[今天fb上发了一篇关于淘宝二维码钓鱼的文章，不过该文章估计也快被公关了，暂时甩个还能访问的链接淘宝二维码钓鱼问题原文 大致描述总结下来大概的意思就是如何利用淘口令结合网页扫码登录来进行钓鱼。流程为：使用后端服务自动提取登录二维码的链接->转换成淘口令->散布淘口令->用户复制淘口令后进入淘宝APP->淘宝APP内部转换淘口令后跳转登录授权->用户受骗点击登录->后端服务获取到用户的授权即可登录淘宝。 问题反思一开始看的时候很容易让人以为出问题的是二维码扫描登录，其实并不完全是，因为这本身是一个钓鱼的场景，无论我们如何优化二维码扫描登录也无法避免被用来钓鱼。而让这个场景变得更容易被钓鱼的本身原因应该有下面那么几个： 淘口令生成时候对链接校验不足，本质上还是一个短链接生成服务，虽然有对域名进行校验但是使用URL跳转漏洞可以绕过，那么对于淘口令生成的方面需要加强业务场景的校验，非业务场景的链接应该不予生成。 淘口令在淘宝APP里打开时候没有做严格的场景限定，应该在APP内限制淘口令仅能用来唤起相应的商品或者店铺，而不是跳转到授权登录页。 扫码登录的链接应该只能通过淘宝APP扫码来实现，非该操作都不能通过APP内部逻辑来唤醒，本质上还是对于场景的校验不足。 我个人认为应该按照这么个逻辑来修复这个问题，本质上还是对于钓鱼的场景进行限制即可。没有必要修改二维码扫码登录的协议，最多就是看看还有没有什么加固的空间。当然换句话说，除了淘口令可能被利用以外，如果没有在APP内对于链接唤醒协议的场景做限制，可能还有其他类似的功能也可以被用来做钓鱼。]]></content>
       <categories>
-        <category>222</category>
-        <category>4444</category>
+        <category>案例记录与反思</category>
       </categories>
       <tags>
-        <tag>ttt</tag>
+        <tag>漏洞思考</tag>
       </tags>
   </entry>
   <entry>
     <title><![CDATA[Hello World]]></title>
     <url>%2F2019%2F03%2F27%2Fhello-world%2F</url>
     <content type="text"><![CDATA[Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub. Quick StartCreate a new post1$ hexo new "My New Post" More info: Writing Run server1$ hexo server More info: Server Generate static files1$ hexo generate More info: Generating Deploy to remote sites1$ hexo deploy More info: Deployment]]></content>
-      <categories>
-        <category>test</category>
-      </categories>
-      <tags>
-        <tag>hello</tag>
-      </tags>
   </entry>
 </search>
