@@ -469,6 +469,10 @@ body {
   right: 0;
   background-color: rgba(178,191,204,0.6);
 }
+.header-banner-img-main-img img {
+  min-width: 530px;
+  min-height: 370px;
+}
 .main {
   padding-bottom: 150px;
 }
@@ -1120,7 +1124,7 @@ pre .javascript .function {
   margin: 0;
   text-align: center;
   top: 50%;
-  left: 46.5%;
+  width: 100%;
   position: absolute;
 }
 @media (max-width: 767px) {
@@ -1844,7 +1848,7 @@ pre .javascript .function {
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background: #45d52e;
+  background: #ffff79;
 }
 .links-of-blogroll {
   font-size: 13px;
