@@ -292,6 +292,163 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/04/02/小米手环刷公司门禁/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="JOJO">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/touxiang.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="少女的泪">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/04/02/小米手环刷公司门禁/" itemprop="url">小米手环刷公司门禁</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-04-02T13:32:55+08:00">
+                2019-04-02
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/物联网/" itemprop="url" rel="index">
+                    <span itemprop="name">物联网</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>主要参考的这篇文章<a href="http://bbs.xiaomi.cn/t-34469927" title="小米手环刷门禁" target="_blank" rel="noopener">PN532全加密门禁卡模拟成功</a></p>
+<h2 id="记一下破解密码的相关命令"><a href="#记一下破解密码的相关命令" class="headerlink" title="记一下破解密码的相关命令"></a>记一下破解密码的相关命令</h2><ol>
+<li>mfcuk -C -R 0:A -s 250 -S 250    #该命令貌似是破解密钥但是我没成功过，它在链接我的NFC设备的时候总报错</li>
+<li>mfoc -O test.dmp      #该命令是可以把内容整个dump出来并且可以破解key的</li>
+<li>nfc-list    #该命令是libnfc中带着的命令，可以列出UID</li>
+<li>nfc-mfsetuid xxxxxx     #该命令也是libnfc中用来设置UID的命令</li>
+<li>nfc-mfclassic w a test.dmp #该命令是用来将数据整个写入到卡里，我理解上是直接复制卡内容，但是好像是有限制的，我在复制的时候也不确定有没有成功。<br>PS：小米手环模拟卡片后不知道为什么使用mfoc -O xxx.dmp不能dump里面的数据，所以我不太确定是否模拟成功。不过后来我发现虽然那些门禁卡都是加密卡，但是起作用的只是UID，所以一定程度上我们只需要复制UID就可以了。<h2 id="复制UID"><a href="#复制UID" class="headerlink" title="复制UID"></a>复制UID</h2>复制UID的流程就很简单了：</li>
+<li>将需要复制的卡放到读卡器上使用nfc-list读书UID并记录</li>
+<li>将空白卡放到读卡器上使用nfc-mfsetuid设置上面的UID</li>
+<li>小米手环复制非加密卡功能来复制空白卡即可（因为小米限制了复制加密卡）<h2 id="复制加密内容"><a href="#复制加密内容" class="headerlink" title="复制加密内容"></a>复制加密内容</h2>经过测试部分门禁还是会校验加密内容，如果测试过只复制UID无效情况下，可以尝试下面的方法把加密内容一起复制进去，虽然手环在命令读取下没有数据返回但是通过测试发现应该还是有写入成功的。</li>
+<li>mfoc -O test.dmp #来复制卡片内容同时会破解卡片</li>
+<li>先通过复制UID的过程让小米手环模拟白卡</li>
+<li>修改test.dmp文件中，将除了有数据的64blok保留其他都删掉</li>
+<li>按照文章中所示修改对应行的数据</li>
+<li>nfc-mfclassic w a test.dmp #将文件内的数据写入到卡片里</li>
+</ol>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/03/29/关于淘宝二维码钓鱼问题的一些想法/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -605,7 +762,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-count">3</span>
                   <span class="site-state-item-name">posts</span>
                 </a>
               </div>
@@ -616,7 +773,7 @@
               
               <div class="site-state-item site-state-categories">
                 <a href="/categories/index.html">
-                  <span class="site-state-item-count">1</span>
+                  <span class="site-state-item-count">2</span>
                   <span class="site-state-item-name">categories</span>
                 </a>
               </div>
@@ -627,7 +784,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">1</span>
+                  <span class="site-state-item-count">3</span>
                   <span class="site-state-item-name">tags</span>
                 </a>
               </div>
