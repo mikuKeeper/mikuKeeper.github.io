@@ -13,9 +13,16 @@
       </tags>
   </entry>
   <entry>
-    <title></title>
+    <title><![CDATA[安卓模拟器相关]]></title>
     <url>%2F2019%2F04%2F08%2F%E5%AE%89%E5%8D%93%E6%A8%A1%E6%8B%9F%E5%99%A8%E7%9B%B8%E5%85%B3%2F</url>
-    <content type="text"><![CDATA[title: 安卓模拟器相关date: 2019-04-08 17:43:21tags: Android 黑灰产薅羊毛 categories: 移动安全攻防 #安卓模拟器杂七杂八的记录 adb常规操作可以参考mumu模拟器官方的文档，蛮详细的adb常规操作 mumu模拟器夜神模拟器]]></content>
+    <content type="text"><![CDATA[安卓模拟器杂七杂八的记录adb常规操作可以参考mumu模拟器官方的文档，蛮详细的adb常规操作 mumu模拟器夜神模拟器]]></content>
+      <categories>
+        <category> 移动安全攻防</category>
+      </categories>
+      <tags>
+        <tag>Android</tag>
+        <tag>黑灰产薅羊毛</tag>
+      </tags>
   </entry>
   <entry>
     <title><![CDATA[MITMPROXY的摘要]]></title>

