@@ -89,14 +89,14 @@
 <meta property="og:site_name" content="少女的泪">
 <meta property="og:description" content="昨天在群里看群友在反馈一个上传接口存在任意文件上传的问题，但是B站的管理员以content-type限制并不能造成实际影响为由认为这个问题可控，事实上确实有限制，群友们一致认为除了对客服钓鱼以外也难以利用这个缺陷。于是我也一起看了看这个接口，从而有了这个记录。 业务背景先来看看漏洞所在的业务位置：B站某客服系统具体截图：可以看到有个上传附件的功能，问题就在这个地方出现的。这个系统主要是由第三方公司">
 <meta property="og:locale" content="default">
-<meta property="og:image" content="http://chuantu.xyz/t6/702/1559269095x1033347913.png">
-<meta property="og:image" content="http://chuantu.xyz/t6/702/1559270019x2073530529.jpg">
-<meta property="og:image" content="http://chuantu.xyz/t6/702/1559271265x1033347913.jpg">
-<meta property="og:updated_time" content="2019-05-31T02:57:12.073Z">
+<meta property="og:image" content="https://image.3001.net/images/20190625/1561463258_5d1209dab0611.png!small">
+<meta property="og:image" content="https://image.3001.net/images/20190625/1561463258_5d1209dae0f46.jpg!small">
+<meta property="og:image" content="https://image.3001.net/images/20190625/1561463258_5d1209dac60e9.png!small">
+<meta property="og:updated_time" content="2019-06-25T11:49:43.979Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="bilibili子域名根目录挂黑页问题记录">
 <meta name="twitter:description" content="昨天在群里看群友在反馈一个上传接口存在任意文件上传的问题，但是B站的管理员以content-type限制并不能造成实际影响为由认为这个问题可控，事实上确实有限制，群友们一致认为除了对客服钓鱼以外也难以利用这个缺陷。于是我也一起看了看这个接口，从而有了这个记录。 业务背景先来看看漏洞所在的业务位置：B站某客服系统具体截图：可以看到有个上传附件的功能，问题就在这个地方出现的。这个系统主要是由第三方公司">
-<meta name="twitter:image" content="http://chuantu.xyz/t6/702/1559269095x1033347913.png">
+<meta name="twitter:image" content="https://image.3001.net/images/20190625/1561463258_5d1209dab0611.png!small">
 
 
 
@@ -386,8 +386,8 @@
 
       
         <p>昨天在群里看群友在反馈一个上传接口存在任意文件上传的问题，但是B站的管理员以content-type限制并不能造成实际影响为由认为这个问题可控，事实上确实有限制，群友们一致认为除了对客服钓鱼以外也难以利用这个缺陷。于是我也一起看了看这个接口，从而有了这个记录。</p>
-<h2 id="业务背景"><a href="#业务背景" class="headerlink" title="业务背景"></a>业务背景</h2><p>先来看看漏洞所在的业务位置：<a href="https://service.bilibili.com/chat/pc/index.html?sysNum=41076deba1104a1ba055bc38aacae3d5&amp;" title="B站某客服系统" target="_blank" rel="noopener">B站某客服系统</a><br>具体截图：<br><img src="http://chuantu.xyz/t6/702/1559269095x1033347913.png" alt title="客服系统截图"><br>可以看到有个上传附件的功能，问题就在这个地方出现的。这个系统主要是由第三方公司承建的，所以存在较多的问题而且B站也因为一些原因只能做整体加固不能对其进行代码修改。原来的设计就是可以上传任意后缀名的附件并提供给客服审核，所以再不济也会存在钓鱼的问题。</p>
-<h2 id="漏洞情况"><a href="#漏洞情况" class="headerlink" title="漏洞情况"></a>漏洞情况</h2><p>没有太多好说的，就是个任意文件上传：<br><img src="http://chuantu.xyz/t6/702/1559270019x2073530529.jpg" alt title="目录穿越加上任意可控文件名"><br>主要问题和一些实际情况：</p>
+<h2 id="业务背景"><a href="#业务背景" class="headerlink" title="业务背景"></a>业务背景</h2><p>先来看看漏洞所在的业务位置：<a href="https://service.bilibili.com/chat/pc/index.html?sysNum=41076deba1104a1ba055bc38aacae3d5&amp;" title="B站某客服系统" target="_blank" rel="noopener">B站某客服系统</a><br>具体截图：<br><img src="https://image.3001.net/images/20190625/1561463258_5d1209dab0611.png!small" alt><br>可以看到有个上传附件的功能，问题就在这个地方出现的。这个系统主要是由第三方公司承建的，所以存在较多的问题而且B站也因为一些原因只能做整体加固不能对其进行代码修改。原来的设计就是可以上传任意后缀名的附件并提供给客服审核，所以再不济也会存在钓鱼的问题。</p>
+<h2 id="漏洞情况"><a href="#漏洞情况" class="headerlink" title="漏洞情况"></a>漏洞情况</h2><p>没有太多好说的，就是个任意文件上传：<br><img src="https://image.3001.net/images/20190625/1561463258_5d1209dae0f46.jpg!small" alt><br>主要问题和一些实际情况：</p>
 <ol>
 <li>所有参数均可控，控制后可以改变最终路径</li>
 <li>filename参数中会对一些特殊符号做过滤或者转义，而pid参数则相对过滤比较松</li>
@@ -406,7 +406,7 @@
 <li>假设是nginx层面做了限制，并且web根目录访问后是一片白，看到返回的content-type是html，那么就肯定存在默认页面比如index.html。</li>
 <li>如果前面推测没有问题，那么进而尝试覆盖index.html或者是其他可能的默认页面文件名。</li>
 </ol>
-<p>结论：<br>尝试覆盖index.html毫无疑问是成功的，那么至少得出可以挂黑页了，并且可以用来打全站的cookies，或者是钓鱼等等。<br>附上一张弹窗：<br><img src="http://chuantu.xyz/t6/702/1559271265x1033347913.jpg" alt title="挂有恶意JS的黑页弹cookies"><br>引申：</p>
+<p>结论：<br>尝试覆盖index.html毫无疑问是成功的，那么至少得出可以挂黑页了，并且可以用来打全站的cookies，或者是钓鱼等等。<br>附上一张弹窗：<br><img src="https://image.3001.net/images/20190625/1561463258_5d1209dac60e9.png!small" alt><br>引申：</p>
 <ol>
 <li>考虑到系统框架用的是java系列，可能是stuts2或者是SpringMVC，我觉得是struts2，还可以在深挖一些东西通过覆盖一些系统框架文件来获取权限。因此我认为是存在getshell的可能的，或者使用框架漏洞来尝试<ol start="2">
 <li>管理员说这个系统是网络隔离的，就算被攻陷风险也可控，但在我看来，如果真的被getshell，考虑到是个客服系统，可以通过构造一些更复杂的攻击payload去尝试攻击那些引用这个系统数据的内部系统，当然也可以用来钓鱼。</li>
@@ -444,8 +444,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2019/04/03/MITMPROXY的摘要/" rel="next" title="MITMPROXY的摘要">
-                <i class="fa fa-chevron-left"></i> MITMPROXY的摘要
+              <a href="/2019/04/02/小米手环刷公司门禁/" rel="next" title="小米手环刷公司门禁">
+                <i class="fa fa-chevron-left"></i> 小米手环刷公司门禁
               </a>
             
           </div>
@@ -454,8 +454,8 @@
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2019/04/08/安卓模拟器相关/" rel="prev" title="安卓模拟器相关">
-                安卓模拟器相关 <i class="fa fa-chevron-right"></i>
+              <a href="/2019/04/03/MITMPROXY的摘要/" rel="prev" title="MITMPROXY的摘要">
+                MITMPROXY的摘要 <i class="fa fa-chevron-right"></i>
               </a>
             
           </div>
