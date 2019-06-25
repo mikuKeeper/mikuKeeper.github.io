@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2019-06-21T09:37:35.487Z</updated>
+  <updated>2019-06-25T11:26:30.440Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -15,6 +15,32 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>exe4j生成的exe文件反编译记录</title>
+    <link href="http://yoursite.com/2019/06/25/exe4j%E7%94%9F%E6%88%90%E7%9A%84exe%E6%96%87%E4%BB%B6%E5%8F%8D%E7%BC%96%E8%AF%91%E8%AE%B0%E5%BD%95/"/>
+    <id>http://yoursite.com/2019/06/25/exe4j生成的exe文件反编译记录/</id>
+    <published>2019-06-25T09:40:30.000Z</published>
+    <updated>2019-06-25T11:26:30.440Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="exe4j"><a href="#exe4j" class="headerlink" title="exe4j"></a>exe4j</h2><p>Exe4j是一款经典的讲java程序打包成一个exe程序的软件，没什么其他好说的。</p><h2 id="识别是否exe4j"><a href="#识别是否exe4j" class="headerlink" title="识别是否exe4j"></a>识别是否exe4j</h2><p>我是通过程序中报错信息打印出的堆栈信息中含有exe4j包名来判断的，也可以直接通过下面提供的程序处理一下后看看生成的文件能不能用zip解压出java类来判断。</p><h2 id="exe4j逆向处理程序代码"><a href="#exe4j逆向处理程序代码" class="headerlink" title="exe4j逆向处理程序代码"></a>exe4j逆向处理程序代码</h2><p>直接贴出代码：<br><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">import java.util.*;</span><br><span class="line">import java.io.*;</span><br><span class="line">public class gen &#123;</span><br><span class="line">    public static void main(String args[]) throws IOException &#123;</span><br><span class="line">        FileInputStream fin = new FileInputStream(args[0]);</span><br><span class="line">        FileOutputStream fout = new FileOutputStream(args[1]);</span><br><span class="line">        BufferedInputStream bin = new BufferedInputStream(fin);</span><br><span class="line">        BufferedOutputStream bout = new BufferedOutputStream(fout);</span><br><span class="line">        int in = 0;</span><br><span class="line">        do &#123;</span><br><span class="line">            in = bin.read();</span><br><span class="line">            if (in == -1)</span><br><span class="line">                break;</span><br><span class="line">            in ^= 0x88;</span><br><span class="line">            bout.write(in);</span><br><span class="line">        &#125; while (true);</span><br><span class="line">        bin.close();</span><br><span class="line">        fin.close();</span><br><span class="line">        bout.close();</span><br><span class="line">        fout.close();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p><ol><li><p>将这个程序保存为gen.java，名字不可以改，通过以下命令来编译：</p><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">javac gen.java</span><br><span class="line">java gen.class 需要转换的exe文件名 转换后的输出文件名</span><br></pre></td></tr></table></figure></li><li><p>使用zip解压软件直接解压输出的文件</p></li><li>正常解压后会出现java类文件，拖入jd-gui里就可以按照java逆向来走了</li></ol>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h2 id=&quot;exe4j&quot;&gt;&lt;a href=&quot;#exe4j&quot; class=&quot;headerlink&quot; title=&quot;exe4j&quot;&gt;&lt;/a&gt;exe4j&lt;/h2&gt;&lt;p&gt;Exe4j是一款经典的讲java程序打包成一个exe程序的软件，没什么其他好说的。&lt;/p&gt;
+&lt;h2 id=&quot;识别是否
+      
+    
+    </summary>
+    
+      <category term="客户端逆向" scheme="http://yoursite.com/categories/%E5%AE%A2%E6%88%B7%E7%AB%AF%E9%80%86%E5%90%91/"/>
+    
+    
+      <category term="exe4j程序逆向" scheme="http://yoursite.com/tags/exe4j%E7%A8%8B%E5%BA%8F%E9%80%86%E5%90%91/"/>
+    
+  </entry>
   
   <entry>
     <title>基于VIM宏的后门-深入利用VIM漏洞CVE-2019-12735</title>
