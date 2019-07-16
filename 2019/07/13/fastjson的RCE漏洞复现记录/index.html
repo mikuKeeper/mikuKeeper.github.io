@@ -89,7 +89,7 @@
 <meta property="og:site_name" content="少女的泪">
 <meta property="og:description" content="0x00 关于fastjson反正是阿里巴巴的一个开源json库，java站都爱用，还有比如Jackson、gson什么的，Jackson也有RCE问题。fastjson主要几次问题都在于autotype，其实我也不太懂autotype，可能@type的形式就叫aotutype吧。 0x01 关于反序列化之前的autotype存在反序列化的问题，48版本后又多了个绕过autotype关闭的问题，以">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2019-07-15T08:08:57.169Z">
+<meta property="og:updated_time" content="2019-07-16T12:26:26.356Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="fastjson的RCE漏洞复现记录">
 <meta name="twitter:description" content="0x00 关于fastjson反正是阿里巴巴的一个开源json库，java站都爱用，还有比如Jackson、gson什么的，Jackson也有RCE问题。fastjson主要几次问题都在于autotype，其实我也不太懂autotype，可能@type的形式就叫aotutype吧。 0x01 关于反序列化之前的autotype存在反序列化的问题，48版本后又多了个绕过autotype关闭的问题，以">
@@ -408,7 +408,7 @@
 <h2 id="0x07-关于java反序列化"><a href="#0x07-关于java反序列化" class="headerlink" title="0x07 关于java反序列化"></a>0x07 关于java反序列化</h2><p>几个工具可以看一下</p>
 <ol>
 <li><a href="https://github.com/mbechler/marshalsec" target="_blank" rel="noopener"> marshalsec </a></li>
-<li><a href="https://github.com/frohoff/ysoserial" target="_blank" rel="noopener"> ysoserial </a><br>Java反序列化备忘录文章<a href="https://xz.aliyun.com/t/2042" target="_blank" rel="noopener">备忘录</a></li>
+<li><a href="https://github.com/frohoff/ysoserial" target="_blank" rel="noopener"> ysoserial </a><br>Java反序列化备忘录文章<a href="https://xz.aliyun.com/t/2042" target="_blank" rel="noopener">备忘录</a><br><a href="http://www.jackson-t.ca/runtime-exec-payloads.html" target="_blank" rel="noopener">javaruntime.exec payload生成</a></li>
 </ol>
 
       
