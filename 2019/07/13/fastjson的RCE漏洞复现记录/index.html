@@ -89,7 +89,7 @@
 <meta property="og:site_name" content="少女的泪">
 <meta property="og:description" content="0x00 关于fastjson反正是阿里巴巴的一个开源json库，java站都爱用，还有比如Jackson、gson什么的，Jackson也有RCE问题。fastjson主要几次问题都在于autotype，其实我也不太懂autotype，可能@type的形式就叫aotutype吧。 0x01 关于反序列化之前的autotype存在反序列化的问题，48版本后又多了个绕过autotype关闭的问题，以">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2019-07-16T12:26:26.356Z">
+<meta property="og:updated_time" content="2019-07-19T05:55:31.790Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="fastjson的RCE漏洞复现记录">
 <meta name="twitter:description" content="0x00 关于fastjson反正是阿里巴巴的一个开源json库，java站都爱用，还有比如Jackson、gson什么的，Jackson也有RCE问题。fastjson主要几次问题都在于autotype，其实我也不太懂autotype，可能@type的形式就叫aotutype吧。 0x01 关于反序列化之前的autotype存在反序列化的问题，48版本后又多了个绕过autotype关闭的问题，以">
@@ -399,16 +399,16 @@
 </ol>
 <p>关于服务搭建，建议不要搭建rmi服务，因为目前看来和ldap等价，而ldap服务具有饶过的可能，因此直接使用ldap就好了。如果使用饶过则需要修改ladp服务器的部分代码，依旧是参考上面饶过的那篇文章最后提到的那段。<a href="https://github.com/kxcode/JNDI-Exploit-Bypass-Demo/tree/master/PoC" target="_blank" rel="noopener">bypass的github</a><br>关于代码修改后的编译问题：</p>
 <ol>
-<li>mvn compile   会生产class文件</li>
-<li>mvn install  不仅会生产class还会生产jar</li>
+<li>mvn compile   会生产class文件，会产生不带依赖的jar包</li>
+<li>mvn install  不仅会生产class还会生产jar和带依赖的jar</li>
 <li>如果部分版本冲突可以尝试修改pom文件里的版本信息</li>
-<li>如果自己启动ldap需要mvn将依赖打包后，通过java命令指定依赖位置来执行</li>
+<li>java -cp Jar 包地址 person.server.LdapServer 就可以启动ldap服务，这个是通过编译的来的jar包里的class启动的server，通过marshalsec的话也是启动的marshalsec包里的ldap服务</li>
 </ol>
 <h2 id="0x06-扩展"><a href="#0x06-扩展" class="headerlink" title="0x06 扩展"></a>0x06 扩展</h2><p>由于饶过姿势太多，后续可能考虑编写一个统一的检测工具，依赖于修改ldap服务器使其针对不同的请求返回不同的利用链payload，依照这个思路来做检测。</p>
 <h2 id="0x07-关于java反序列化"><a href="#0x07-关于java反序列化" class="headerlink" title="0x07 关于java反序列化"></a>0x07 关于java反序列化</h2><p>几个工具可以看一下</p>
 <ol>
 <li><a href="https://github.com/mbechler/marshalsec" target="_blank" rel="noopener"> marshalsec </a></li>
-<li><a href="https://github.com/frohoff/ysoserial" target="_blank" rel="noopener"> ysoserial </a><br>Java反序列化备忘录文章<a href="https://xz.aliyun.com/t/2042" target="_blank" rel="noopener">备忘录</a><br><a href="http://www.jackson-t.ca/runtime-exec-payloads.html" target="_blank" rel="noopener">javaruntime.exec payload生成</a></li>
+<li><a href="https://github.com/frohoff/ysoserial" target="_blank" rel="noopener"> ysoserial </a><br>Java反序列化备忘录文章<a href="https://xz.aliyun.com/t/2042" target="_blank" rel="noopener">备忘录</a><br><a href="http://www.jackson-t.ca/runtime-exec-payloads.html" target="_blank" rel="noopener">javaruntime.exec payload生成</a><br>KM29Nw2ydMpJ8kRz</li>
 </ol>
 
       
@@ -449,6 +449,10 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/07/25/xstream-1.4.10反序列化漏洞/" rel="prev" title="fastjson的RCE漏洞复现记录">
+                fastjson的RCE漏洞复现记录 <i class="fa fa-chevron-right"></i>
+              </a>
             
           </div>
         </div>
@@ -527,7 +531,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">10</span>
+                  <span class="site-state-item-count">11</span>
                   <span class="site-state-item-name">posts</span>
                 </a>
               </div>
@@ -549,7 +553,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">13</span>
+                  <span class="site-state-item-count">14</span>
                   <span class="site-state-item-name">tags</span>
                 </a>
               </div>

