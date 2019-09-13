@@ -68,7 +68,7 @@
 
 
 
-  <meta name="keywords" content="http抓包,MITMPROXY,">
+  <meta name="keywords" content="honeypot,">
 
 
 
@@ -81,18 +81,20 @@
 
 
 
-<meta name="description" content="MITMPROXY基本介绍没什么好介绍的，用过burpsuite的理解这个应该没什么难度，就是个httpproxy。主要特色是有命令行工具可以操作抓包，同时可以通过自定义python脚本来集成一些批量化请求和响应的操作比较方便。主要有mitmproxy、mitmdump、mitmweb mitmproxyMitmproxy很简单，就是个命令行的bursuite，命令行界面操作起来有点像vim，操作">
-<meta name="keywords" content="http抓包,MITMPROXY">
+<meta name="description" content="0x00 关于tpot相关Tpot我个人理解是一个比较不错的高集成度的蜜罐系统，里面有很多的蜜罐使用docker封装起来独立运行。tpot则将每一个独立的蜜罐的日志格式整理起来最终通过ELK的形式统一展示，效果非常不错，下面是控制端的图：这界面，这特效，没什么好说的就是棒，就是赛博朋克！另外dashboard的模板不止一个，所以很不错，搜索那边日志也分割的很清晰，可以搜集到很多有用的信息。如果我们">
+<meta name="keywords" content="honeypot">
 <meta property="og:type" content="article">
-<meta property="og:title" content="MITMPROXY的摘要">
-<meta property="og:url" content="http://yoursite.com/2019/04/03/MITMPROXY的摘要/index.html">
+<meta property="og:title" content="修改tpot蜜罐为主控+探测器模式">
+<meta property="og:url" content="http://yoursite.com/2019/08/29/修改tpot蜜罐为主控+探测器模式/index.html">
 <meta property="og:site_name" content="少女的泪">
-<meta property="og:description" content="MITMPROXY基本介绍没什么好介绍的，用过burpsuite的理解这个应该没什么难度，就是个httpproxy。主要特色是有命令行工具可以操作抓包，同时可以通过自定义python脚本来集成一些批量化请求和响应的操作比较方便。主要有mitmproxy、mitmdump、mitmweb mitmproxyMitmproxy很简单，就是个命令行的bursuite，命令行界面操作起来有点像vim，操作">
+<meta property="og:description" content="0x00 关于tpot相关Tpot我个人理解是一个比较不错的高集成度的蜜罐系统，里面有很多的蜜罐使用docker封装起来独立运行。tpot则将每一个独立的蜜罐的日志格式整理起来最终通过ELK的形式统一展示，效果非常不错，下面是控制端的图：这界面，这特效，没什么好说的就是棒，就是赛博朋克！另外dashboard的模板不止一个，所以很不错，搜索那边日志也分割的很清晰，可以搜集到很多有用的信息。如果我们">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2019-04-08T09:15:36.200Z">
+<meta property="og:image" content="https://image.3001.net/images/20190913/1568364483_5d7b57c3e4aae.jpg!small">
+<meta property="og:updated_time" content="2019-09-13T09:10:05.882Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="MITMPROXY的摘要">
-<meta name="twitter:description" content="MITMPROXY基本介绍没什么好介绍的，用过burpsuite的理解这个应该没什么难度，就是个httpproxy。主要特色是有命令行工具可以操作抓包，同时可以通过自定义python脚本来集成一些批量化请求和响应的操作比较方便。主要有mitmproxy、mitmdump、mitmweb mitmproxyMitmproxy很简单，就是个命令行的bursuite，命令行界面操作起来有点像vim，操作">
+<meta name="twitter:title" content="修改tpot蜜罐为主控+探测器模式">
+<meta name="twitter:description" content="0x00 关于tpot相关Tpot我个人理解是一个比较不错的高集成度的蜜罐系统，里面有很多的蜜罐使用docker封装起来独立运行。tpot则将每一个独立的蜜罐的日志格式整理起来最终通过ELK的形式统一展示，效果非常不错，下面是控制端的图：这界面，这特效，没什么好说的就是棒，就是赛博朋克！另外dashboard的模板不止一个，所以很不错，搜索那边日志也分割的很清晰，可以搜集到很多有用的信息。如果我们">
+<meta name="twitter:image" content="https://image.3001.net/images/20190913/1568364483_5d7b57c3e4aae.jpg!small">
 
 
 
@@ -122,13 +124,13 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/2019/04/03/MITMPROXY的摘要/">
+  <link rel="canonical" href="http://yoursite.com/2019/08/29/修改tpot蜜罐为主控+探测器模式/">
 
 
 
 
 
-  <title>MITMPROXY的摘要 | 少女的泪</title>
+  <title>修改tpot蜜罐为主控+探测器模式 | 少女的泪</title>
   
 
 
@@ -292,7 +294,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/04/03/MITMPROXY的摘要/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/08/29/修改tpot蜜罐为主控+探测器模式/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="JOJO">
@@ -309,7 +311,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">MITMPROXY的摘要</h1>
+          <h1 class="post-title" itemprop="name headline">修改tpot蜜罐为主控+探测器模式</h1>
         
 
         <div class="post-meta">
@@ -321,8 +323,8 @@
               
                 <span class="post-meta-item-text">Posted on</span>
               
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-04-03T15:40:30+08:00">
-                2019-04-03
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-08-29T12:31:30+08:00">
+                2019-08-29
               </time>
             
 
@@ -344,8 +346,8 @@
               
               
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/爬虫/" itemprop="url" rel="index">
-                    <span itemprop="name">爬虫</span>
+                  <a href="/categories/蜜罐/" itemprop="url" rel="index">
+                    <span itemprop="name">蜜罐</span>
                   </a>
                 </span>
 
@@ -381,18 +383,23 @@
       
 
       
-        <h1 id="MITMPROXY基本介绍"><a href="#MITMPROXY基本介绍" class="headerlink" title="MITMPROXY基本介绍"></a>MITMPROXY基本介绍</h1><p>没什么好介绍的，用过burpsuite的理解这个应该没什么难度，就是个httpproxy。主要特色是有命令行工具可以操作抓包，同时可以通过自定义python脚本来集成一些批量化请求和响应的操作比较方便。主要有mitmproxy、mitmdump、mitmweb</p>
-<h2 id="mitmproxy"><a href="#mitmproxy" class="headerlink" title="mitmproxy"></a>mitmproxy</h2><p>Mitmproxy很简单，就是个命令行的bursuite，命令行界面操作起来有点像vim，操作的时候更多是对请求进行重新编辑后重放来实现。其他和burp类似的功能，记录各种请求和响应信息。</p>
-<ul>
-<li>貌似支持一个叫做key binding的功能，应该是类似于自定义快捷键和宏操作差不多的意思，主要是在它的终端中使用的。</li>
-<li>支持通过正则配置替换规则来对内容进行替换</li>
-<li>支持过滤，过滤语法参考<a href="https://docs.mitmproxy.org/stable/concepts-filters/" title="mitmproxy filter" target="_blank" rel="noopener">mitmproxy filter</a></li>
-<li>似乎支持TCP代理，但是不能对TCP流进行修改</li>
-<li>支持websocket</li>
-<li>支持socks proxy</li>
-<li>支持透明模式，透明模式是指在网络层进行端口重定向到proxy上，不过不能绕过证书校验（配合ssltrip进行降级可能可行）具体参考<a href="https://docs.mitmproxy.org/stable/howto-transparent/" title="mitmproxy透明模式" target="_blank" rel="noopener">mitmproxy透明模式</a><h2 id="mitmdump"><a href="#mitmdump" class="headerlink" title="mitmdump"></a>mitmdump</h2>Mitmdump与proxy不同的地方在于它可以把请求响应dump出来，并且可以通过自定义的python脚本来实现规则，通过mitmdump -s xxx.py来实现。<br>关于脚本编写的一些案例可以参考<a href="https://docs.mitmproxy.org/stable/addons-scripting/" title="mitmproxy-scripting" target="_blank" rel="noopener">mitmproxy-scripting</a><h2 id="mitmweb"><a href="#mitmweb" class="headerlink" title="mitmweb"></a>mitmweb</h2>mitmproxy的web版本<br>没有更多想说的</li>
-</ul>
-<h1 id="其他重点记录"><a href="#其他重点记录" class="headerlink" title="其他重点记录"></a>其他重点记录</h1><p>暂无</p>
+        <h2 id="0x00-关于tpot相关"><a href="#0x00-关于tpot相关" class="headerlink" title="0x00 关于tpot相关"></a>0x00 关于tpot相关</h2><p>Tpot我个人理解是一个比较不错的高集成度的蜜罐系统，里面有很多的蜜罐使用docker封装起来独立运行。tpot则将每一个独立的蜜罐的日志格式整理起来最终通过ELK的形式统一展示，效果非常不错，下面是控制端的图：<br><img src="https://image.3001.net/images/20190913/1568364483_5d7b57c3e4aae.jpg!small" alt><br>这界面，这特效，没什么好说的就是棒，就是赛博朋克！<br>另外dashboard的模板不止一个，所以很不错，搜索那边日志也分割的很清晰，可以搜集到很多有用的信息。<br>如果我们不需要主控和探测分离，也就是所有的东西都装在一台机器上的话，可以不用看后面的内容，只需要找个可以上传自定义镜像的vps，然后安装标准版然后打开即可用，没有什么好说的。<br>现在我们希望实现的是如下模式：<br>  ————-> sensor1<br>controller |<br> —————>sensor2<br>即部署主从模式的蜜罐，仅仅在外网部署N个探测器，然后将日志信息全部集中到一台主控端上进行分析处理。我翻了一下tpot，貌似没有天生将主控和探测器分离安装，因此要实现这种形式需要手工进行分离ELK。<br>既然整个tpot日志分析都基于ELK，那么我们要做的也很简单，将elasticsearch和kibana分离出来作为主控端，每个sensor上部署logstash，logstash的日志发送地址全部发送到主控的elasticsearch就好了。<br>补一个tpot的地址：<a href="http://dtag-dev-sec.github.io/mediator/feature/2019/04/01/tpot-1903.html" title="tpot官网" target="_blank" rel="noopener">tpot官网</a></p>
+<h2 id="0x01-提取主控"><a href="#0x01-提取主控" class="headerlink" title="0x01 提取主控"></a>0x01 提取主控</h2><p>   为了提取主控中的ES和logstash以及其他可能比较喜欢的辅助工具，可以先在自己的本地起个虚拟机，安装标准版的tpot，即安装的时候选择standard，等待安装完毕。<br>  然后我们要做的就是完成安装后进到系统里，默认启动后会自动启动所有的docker实例。使用docker命令将我们需要的实例单独打包成镜像倒出来，我们最需要的目前是elasticsearch、kibana、logstash，如果还有其他需要的也可以倒出来。打包成镜像的命令为：<br><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo docker commit xxxx:xxx //commit container to images</span><br><span class="line">sudo docker save xxxx &gt; xxx.tar //package the image to tar</span><br><span class="line">sudo docker inspect xxx //details of image or container</span><br></pre></td></tr></table></figure></p>
+<p>然后把打包好的tar包保存起来，放到需要成为主控的地方重新转成container：<br><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo docker load -i xxx.tar //import images from tar</span><br></pre></td></tr></table></figure></p>
+<p>这里要注意的是es的容器其使用了虚拟机本地的data目录，建议把data目录里的数据一并考出去然后使移植过的es容器的data目录挂载到这个目录上，类似于：<br><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo docker run -d -p 59200:9200 -v /mnt/nas/honeyportdata:/data:rw --name tpotes tpotes /usr/share/elasticsearch/bin/elasticsearch</span><br></pre></td></tr></table></figure></p>
+<p>PS：建议在迁移的时候关注一下这几个容器的详细信息，里面会写着端口映射、目录映射、执行命令等，通过docker inspect命令。</p>
+<h2 id="0x02-sensor和主控"><a href="#0x02-sensor和主控" class="headerlink" title="0x02 sensor和主控"></a>0x02 sensor和主控</h2><ol>
+<li>首先我们要先部署tpot，找一个可以支持自定义镜像上传的vps厂家，我使用的是vultr，虚拟机一定要选8G4核以上的配置，不然会出一堆问题。</li>
+<li>然后进入到安装界面就没什么好说的了，省去不说了，在VPS上我们选择安装模式的时候记得选sensor，因为我们只需要VPS上具备探测器功能即可。<ol start="3">
+<li>将之前分离出来的logstash镜像的tar包上传到sensor上，根据这个镜像起一个docker的容器实例。</li>
+<li>主控这边使用之前提取出来的es和kibana镜像在本地创建实例，然后将复制出来的es的data目录映射到容器的es里，起来即可<h2 id="0x03-打通主控与sensor之间的日志传递"><a href="#0x03-打通主控与sensor之间的日志传递" class="headerlink" title="0x03 打通主控与sensor之间的日志传递"></a>0x03 打通主控与sensor之间的日志传递</h2></li>
+<li>先来说说logstash，主要是负责收集sensor的日志并发送给es，直接通过docker exec进入到logstash容器中，修改其配置文件，将本地的es地址改为远程接收的地址，保存重启容器即可。</li>
+<li>再来看看es，建议es先加个密码认证，密码认证直接在es容器里使用es自己的命令，里面有个生成password命令，敲一下跟着流程走就好，记录下密码后记得在logstash里也配上密码。其次确保ES的端口对外暴露，安全起见可以防火墙限制IP访问。es和logstash两边都通，logstash能正常推送给es就会在本地看到数据了。</li>
+<li>如果ES在局域网内网，可能需要通过一些代理映射打通，如果通过花生壳之类的将ES映射到域名上，由于logstash不能配置域名，因此可以在sensor上在装个nginx进行反带处理，其他流程一致。</li>
+<li>另外由于sensor与es之间可能网络不太好，建议配置nginx反带的超时时间长一些，logstash也配置一下超时时间，太短了容易一直报错<h2 id="0x04-目前存在的疑惑"><a href="#0x04-目前存在的疑惑" class="headerlink" title="0x04 目前存在的疑惑"></a>0x04 目前存在的疑惑</h2>连续好几次挂了一晚上，sensor上的容器就全部丢失了，很奇怪没有查到原因。<h2 id="0x05-其他"><a href="#0x05-其他" class="headerlink" title="0x05 其他"></a>0x05 其他</h2>本文仅仅是一个思路的概括和一些坑的提示，具体ELK怎么操作和配置建议自行学习掌握，没那么复杂。</li>
+</ol>
+</li>
+</ol>
 
       
     </div>
@@ -410,9 +417,7 @@
       
         <div class="post-tags">
           
-            <a href="/tags/http抓包/" rel="tag"># http抓包</a>
-          
-            <a href="/tags/MITMPROXY/" rel="tag"># MITMPROXY</a>
+            <a href="/tags/honeypot/" rel="tag"># honeypot</a>
           
         </div>
       
@@ -425,8 +430,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2019/04/03/bilibili子域名根目录挂黑页问题记录/" rel="next" title="bilibili子域名根目录挂黑页问题记录">
-                <i class="fa fa-chevron-left"></i> bilibili子域名根目录挂黑页问题记录
+              <a href="/2019/08/13/ELK安装使用相关记录/" rel="next" title="ELK安装使用相关记录">
+                <i class="fa fa-chevron-left"></i> ELK安装使用相关记录
               </a>
             
           </div>
@@ -435,8 +440,8 @@
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2019/04/08/安卓模拟器相关/" rel="prev" title="安卓模拟器相关">
-                安卓模拟器相关 <i class="fa fa-chevron-right"></i>
+              <a href="/2019/09/10/scapy发送TLS自定义包/" rel="prev" title="scapy发送TLS自定义包">
+                scapy发送TLS自定义包 <i class="fa fa-chevron-right"></i>
               </a>
             
           </div>
@@ -592,7 +597,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#MITMPROXY基本介绍"><span class="nav-number">1.</span> <span class="nav-text">MITMPROXY基本介绍</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#mitmproxy"><span class="nav-number">1.1.</span> <span class="nav-text">mitmproxy</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#mitmdump"><span class="nav-number">1.2.</span> <span class="nav-text">mitmdump</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#mitmweb"><span class="nav-number">1.3.</span> <span class="nav-text">mitmweb</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#其他重点记录"><span class="nav-number">2.</span> <span class="nav-text">其他重点记录</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0x00-关于tpot相关"><span class="nav-number">1.</span> <span class="nav-text">0x00 关于tpot相关</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x01-提取主控"><span class="nav-number">2.</span> <span class="nav-text">0x01 提取主控</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x02-sensor和主控"><span class="nav-number">3.</span> <span class="nav-text">0x02 sensor和主控</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x03-打通主控与sensor之间的日志传递"><span class="nav-number">4.</span> <span class="nav-text">0x03 打通主控与sensor之间的日志传递</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x04-目前存在的疑惑"><span class="nav-number">5.</span> <span class="nav-text">0x04 目前存在的疑惑</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x05-其他"><span class="nav-number">6.</span> <span class="nav-text">0x05 其他</span></a></li></ol></div>
             
 
           </div>

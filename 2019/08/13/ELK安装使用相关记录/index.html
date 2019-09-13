@@ -89,7 +89,7 @@
 <meta property="og:site_name" content="少女的泪">
 <meta property="og:description" content="0x00 ELK大概介绍ELK就是elastic search+logstash+kibana，然后logstash通常还要配上beats，简单的逻辑是：beats -&amp;gt; logstash-&amp;gt;elastic search -&amp;gt;kibana  beats是轻量型的数据采集装置，采集好数据后发送给logstash logstash就像是一个日志搜集管道，里面带了一些日志格式的过滤插件，最后整合成统一格">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2019-08-13T12:06:30.160Z">
+<meta property="og:updated_time" content="2019-08-29T08:57:59.738Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="ELK安装使用相关记录">
 <meta name="twitter:description" content="0x00 ELK大概介绍ELK就是elastic search+logstash+kibana，然后logstash通常还要配上beats，简单的逻辑是：beats -&amp;gt; logstash-&amp;gt;elastic search -&amp;gt;kibana  beats是轻量型的数据采集装置，采集好数据后发送给logstash logstash就像是一个日志搜集管道，里面带了一些日志格式的过滤插件，最后整合成统一格">
@@ -395,7 +395,12 @@
 <li>sudo apt-get update &amp;&amp; sudo apt-get install elasticsearch logstash kibana</li>
 <li>beats的话要根据实际采集的数据格式去下载，比如mysql的话去下载mysqlbeats</li>
 </ol>
-<h2 id="0x02-java环境"><a href="#0x02-java环境" class="headerlink" title="0x02 java环境"></a>0x02 java环境</h2><p>ELK依赖于Java环境，官方说最好建议使用oracle jdk8，oracle现在下载jdk需要登陆注册，因此直接手工去下载包解压缩后手工配置。</p>
+<h2 id="0x02-配置密码认证"><a href="#0x02-配置密码认证" class="headerlink" title="0x02 配置密码认证"></a>0x02 配置密码认证</h2><ol>
+<li>elasticsearch上新版本已经集成了xpack，进入到bin目录下，使用<code>elasticsearch-setup-password interactive</code>来交互性的设置密码，并且将密码记录下来</li>
+<li>kibana中需要配置es的user和password选项，并且注意kibana的basepath</li>
+<li>logstash中在output的es配置中配置正确的hosts、user、password选项，注意logstash的hosts可以接受域名，但是域名和端口必须能用IP访问，为了解决这个问题可以使用nginx代理来代理一层</li>
+</ol>
+<h2 id="0x99-java环境"><a href="#0x99-java环境" class="headerlink" title="0x99 java环境"></a>0x99 java环境</h2><p>ELK依赖于Java环境，官方说最好建议使用oracle jdk8，oracle现在下载jdk需要登陆注册，因此直接手工去下载包解压缩后手工配置。</p>
 <ol>
 <li>创建java的目录：<code>mkdir /usr/lib/jvm</code></li>
 <li>下载并解压tar包：<code>sudo tar -zxvf /home/Downloads/jdk-8u221-linux-x64.tar.gz -C /usr/lib/jvm</code></li>
@@ -435,8 +440,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2019/07/25/xstream-1.4.10反序列化漏洞/" rel="next" title="fastjson的RCE漏洞复现记录">
-                <i class="fa fa-chevron-left"></i> fastjson的RCE漏洞复现记录
+              <a href="/2019/07/25/xstream-1.4.10反序列化漏洞/" rel="next" title="xstream-1.4.10反序列化漏洞">
+                <i class="fa fa-chevron-left"></i> xstream-1.4.10反序列化漏洞
               </a>
             
           </div>
@@ -444,6 +449,10 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/08/29/修改tpot蜜罐为主控+探测器模式/" rel="prev" title="修改tpot蜜罐为主控+探测器模式">
+                修改tpot蜜罐为主控+探测器模式 <i class="fa fa-chevron-right"></i>
+              </a>
             
           </div>
         </div>
@@ -522,7 +531,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">12</span>
+                  <span class="site-state-item-count">14</span>
                   <span class="site-state-item-name">posts</span>
                 </a>
               </div>
@@ -533,7 +542,7 @@
               
               <div class="site-state-item site-state-categories">
                 <a href="/categories/index.html">
-                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-count">10</span>
                   <span class="site-state-item-name">categories</span>
                 </a>
               </div>
@@ -544,7 +553,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">15</span>
+                  <span class="site-state-item-count">17</span>
                   <span class="site-state-item-name">tags</span>
                 </a>
               </div>
@@ -598,7 +607,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0x00-ELK大概介绍"><span class="nav-number">1.</span> <span class="nav-text">0x00 ELK大概介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x01-ELK安装"><span class="nav-number">2.</span> <span class="nav-text">0x01 ELK安装</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x02-java环境"><span class="nav-number">3.</span> <span class="nav-text">0x02 java环境</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0x00-ELK大概介绍"><span class="nav-number">1.</span> <span class="nav-text">0x00 ELK大概介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x01-ELK安装"><span class="nav-number">2.</span> <span class="nav-text">0x01 ELK安装</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x02-配置密码认证"><span class="nav-number">3.</span> <span class="nav-text">0x02 配置密码认证</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x99-java环境"><span class="nav-number">4.</span> <span class="nav-text">0x99 java环境</span></a></li></ol></div>
             
 
           </div>

