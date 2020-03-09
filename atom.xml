@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2020-03-09T06:53:32.983Z</updated>
+  <updated>2020-03-09T06:59:35.171Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -18,10 +18,10 @@
   
   <entry>
     <title>记一个frida调试瑞幸的过程</title>
-    <link href="http://yoursite.com/2020/01/13/%E5%85%B3%E4%BA%8ECORS%E7%9A%84%E4%B8%80%E4%BA%9B%E8%AE%B0%E5%BD%95/"/>
-    <id>http://yoursite.com/2020/01/13/关于CORS的一些记录/</id>
-    <published>2020-01-13T05:21:30.000Z</published>
-    <updated>2020-03-09T06:53:32.983Z</updated>
+    <link href="http://yoursite.com/2020/03/06/%E5%85%B3%E4%BA%8ECORS%E7%9A%84%E4%B8%80%E4%BA%9B%E8%AE%B0%E5%BD%95/"/>
+    <id>http://yoursite.com/2020/03/06/关于CORS的一些记录/</id>
+    <published>2020-03-06T07:00:00.000Z</published>
+    <updated>2020-03-09T06:59:35.171Z</updated>
     
     <content type="html"><![CDATA[<h2 id="0x00-起因"><a href="#0x00-起因" class="headerlink" title="0x00 起因"></a>0x00 起因</h2><p><a href="https://b.cp0.win/chrome%E6%B5%8F%E8%A7%88%E5%99%A8%E9%85%8D%E5%90%88CORS%E9%85%8D%E7%BD%AE%E9%97%AE%E9%A2%98%E5%B8%A6%E6%9D%A5%E7%9A%84%E6%96%B0%E6%94%BB%E5%87%BB%E9%9D%A2.php" target="_blank" rel="noopener">Chrome缓存和CORS</a>这个文章里记录的Chrome缓存存在问题，在<code>Access-Control-Allow-Origin:* 且Access-Control-Allow-Credentials: false</code>的情况下可能可以获取到敏感信息（credentials可能是true也行），</p><h2 id="0x01-前提"><a href="#0x01-前提" class="headerlink" title="0x01 前提"></a>0x01 前提</h2><p>先说一下关于这两个头部值的一些问题：</p><ol><li>当<code>Access-Control-Allow-Origin:*</code>时，credentials不能设置为true，设置为true可能会报错？（不确定），可以设置为false，设置为false不报错，不设置默认应该也是false，即允许任何域时不允许ajax请求传递敏感头部</li><li>当<code>Access-Control-Allow-Origin: 某域名</code>时，credentials设置true则是常见的配置漏洞，设置为false时浏览器如果发起ajax时设置withcredentials为true则报错</li><li>当不设置时默认为null，即拒绝除本域以外所有的域名<h2 id="0x02-想法"><a href="#0x02-想法" class="headerlink" title="0x02 想法"></a>0x02 想法</h2>如果文中所说的属实，那么这个漏洞存在应该很久了，而且利用条件很低，目测只要有敏感接口并且设置了<code>Access-Control-Allow-Origin:*</code>，那么这个接口就变成了一个在Chrome浏览器下接近于csrf漏洞。<br>比较一下这个漏洞和jsonp、csrf的差别：<h3 id="jsonp"><a href="#jsonp" class="headerlink" title="jsonp"></a>jsonp</h3>得存在callback的jsonp接口，存在这种接口，并且会根据cookies返回敏感信息，因为script标签会传递cookies所以就变成了csrf，防范手段也和csrf类似，但接口必须是支持jsonp格式的json接口<h3 id="一般csrf"><a href="#一般csrf" class="headerlink" title="一般csrf"></a>一般csrf</h3>一般的csrf通常是构造html表单并自动提交，通常是触发特定动作而不能获取到数据<h3 id="这个缓存漏洞"><a href="#这个缓存漏洞" class="headerlink" title="这个缓存漏洞"></a>这个缓存漏洞</h3>一般的通过js去拉取数据需要cors配置为<code>Access-Control-Allow-Origin: 某域名</code>且credentials设置true，利用该第三方域名可控来获取敏感数据，但如果配合Chrome缓存问题，可以把这个origin扩大到任意域名，但有个潜在的条件是需要用户先访问目标接口后缓存了页面数据，才可以读取该接口的返回数据。换句话说利用条件：</li><li>没有csrf防御</li><li>存在敏感信息或有利用价值的东西</li><li>origin为星号</li><li>用户在这之前用Chrome浏览器访问过该接口</li></ol>]]></content>
     
