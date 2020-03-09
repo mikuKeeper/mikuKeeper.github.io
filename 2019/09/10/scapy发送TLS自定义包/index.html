@@ -89,7 +89,7 @@
 <meta property="og:site_name" content="少女的泪">
 <meta property="og:description" content="00 安装配置scapy直接从github上下载scapy源码，然后进入到目录中运行即可。由于TLS并不是默认开启的layer，所以需要在配置项中的layer里加入tls。运行后输入TLS查看是否报错，如果没有报错说明TLS层的启用正常。 01 构造TLS请求经过一系列的研究尝试，得出如下构造hello包的代码：123456789sn = ServerName(servername=&quot;&amp;lt;pu">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2019-09-10T11:58:53.035Z">
+<meta property="og:updated_time" content="2019-09-16T06:45:06.554Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="scapy发送TLS自定义包">
 <meta name="twitter:description" content="00 安装配置scapy直接从github上下载scapy源码，然后进入到目录中运行即可。由于TLS并不是默认开启的layer，所以需要在配置项中的layer里加入tls。运行后输入TLS查看是否报错，如果没有报错说明TLS层的启用正常。 01 构造TLS请求经过一系列的研究尝试，得出如下构造hello包的代码：123456789sn = ServerName(servername=&quot;&amp;lt;pu">
@@ -382,7 +382,7 @@
 
       
         <h2 id="00-安装配置scapy"><a href="#00-安装配置scapy" class="headerlink" title="00 安装配置scapy"></a>00 安装配置scapy</h2><p>直接从github上下载scapy源码，然后进入到目录中运行即可。<br>由于TLS并不是默认开启的layer，所以需要在配置项中的layer里加入tls。<br>运行后输入TLS查看是否报错，如果没有报错说明TLS层的启用正常。</p>
-<h2 id="01-构造TLS请求"><a href="#01-构造TLS请求" class="headerlink" title="01 构造TLS请求"></a>01 构造TLS请求</h2><p>经过一系列的研究尝试，得出如下构造hello包的代码：<br><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">sn = ServerName(servername="<span class="tag">&lt;<span class="name">put</span> <span class="attr">server</span> <span class="attr">name</span> <span class="attr">here</span>&gt;</span>\x00\x00\x00\0")</span><br><span class="line">ext = [TLS_Ext_SupportedGroups(groups=["secp256r1"]),</span><br><span class="line">               TLS_Ext_ServerName(servernames=[sn]),</span><br><span class="line">               TLS_Ext_KeyShare_CH(client_shares=[KeyShareEntry(group=23)]),  # noqa: E501</span><br><span class="line">             #  TLS_Ext_SupportedVersions(versions=["TLS 1.3-d18"]),</span><br><span class="line">               TLS_Ext_SignatureAlgorithms(sig_algs=["sha256+rsapss",</span><br><span class="line">                                                     "sha256+rsa"])]</span><br><span class="line">p = TLSClientHello(ciphers=0x1301, ext=ext)</span><br><span class="line">TLSClientAutomaton(server="mail.guahao.com",dport=995,client_hello=p).run()</span><br></pre></td></tr></table></figure></p>
+<h2 id="01-构造TLS请求"><a href="#01-构造TLS请求" class="headerlink" title="01 构造TLS请求"></a>01 构造TLS请求</h2><p>经过一系列的研究尝试，得出如下构造hello包的代码：<br><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">sn = ServerName(servername="<span class="tag">&lt;<span class="name">put</span> <span class="attr">server</span> <span class="attr">name</span> <span class="attr">here</span>&gt;</span>\x00\x00\x00\0")</span><br><span class="line">ext = [TLS_Ext_SupportedGroups(groups=["secp256r1"]),</span><br><span class="line">               TLS_Ext_ServerName(servernames=[sn]),</span><br><span class="line">               TLS_Ext_KeyShare_CH(client_shares=[KeyShareEntry(group=23)]),  # noqa: E501</span><br><span class="line">             #  TLS_Ext_SupportedVersions(versions=["TLS 1.3-d18"]),</span><br><span class="line">               TLS_Ext_SignatureAlgorithms(sig_algs=["sha256+rsapss",</span><br><span class="line">                                                     "sha256+rsa"])]</span><br><span class="line">p = TLSClientHello(ciphers=0x1301, ext=ext)</span><br><span class="line">TLSClientAutomaton(server="mail.xxxx.com",dport=995,client_hello=p).run()</span><br></pre></td></tr></table></figure></p>
 <p>Servername那个参数可以替换成任意的服务器名即可达到我们的目的</p>
 
       
@@ -423,6 +423,10 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/10/09/热门CVE记录（一）/" rel="prev" title="热门CVE记录（一）">
+                热门CVE记录（一） <i class="fa fa-chevron-right"></i>
+              </a>
             
           </div>
         </div>
@@ -501,7 +505,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">14</span>
+                  <span class="site-state-item-count">18</span>
                   <span class="site-state-item-name">posts</span>
                 </a>
               </div>
@@ -512,7 +516,7 @@
               
               <div class="site-state-item site-state-categories">
                 <a href="/categories/index.html">
-                  <span class="site-state-item-count">10</span>
+                  <span class="site-state-item-count">12</span>
                   <span class="site-state-item-name">categories</span>
                 </a>
               </div>
@@ -523,7 +527,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">17</span>
+                  <span class="site-state-item-count">20</span>
                   <span class="site-state-item-name">tags</span>
                 </a>
               </div>
@@ -597,7 +601,7 @@
 
     <footer id="footer" class="footer">
       <div class="footer-inner">
-        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>

