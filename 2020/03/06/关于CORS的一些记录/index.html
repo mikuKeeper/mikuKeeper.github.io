@@ -89,7 +89,7 @@
 <meta property="og:site_name" content="少女的泪">
 <meta property="og:description" content="0x00 起因Chrome缓存和CORS这个文章里记录的Chrome缓存存在问题，在Access-Control-Allow-Origin:* 且Access-Control-Allow-Credentials: false的情况下可能可以获取到敏感信息（credentials可能是true也行）， 0x01 前提先说一下关于这两个头部值的一些问题：  当Access-Control-Allow-">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2020-03-09T06:59:35.171Z">
+<meta property="og:updated_time" content="2020-03-09T07:26:24.306Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="记一个frida调试瑞幸的过程">
 <meta name="twitter:description" content="0x00 起因Chrome缓存和CORS这个文章里记录的Chrome缓存存在问题，在Access-Control-Allow-Origin:* 且Access-Control-Allow-Credentials: false的情况下可能可以获取到敏感信息（credentials可能是true也行）， 0x01 前提先说一下关于这两个头部值的一些问题：  当Access-Control-Allow-">
@@ -386,11 +386,15 @@
 <ol>
 <li>当<code>Access-Control-Allow-Origin:*</code>时，credentials不能设置为true，设置为true可能会报错？（不确定），可以设置为false，设置为false不报错，不设置默认应该也是false，即允许任何域时不允许ajax请求传递敏感头部</li>
 <li>当<code>Access-Control-Allow-Origin: 某域名</code>时，credentials设置true则是常见的配置漏洞，设置为false时浏览器如果发起ajax时设置withcredentials为true则报错</li>
-<li>当不设置时默认为null，即拒绝除本域以外所有的域名<h2 id="0x02-想法"><a href="#0x02-想法" class="headerlink" title="0x02 想法"></a>0x02 想法</h2>如果文中所说的属实，那么这个漏洞存在应该很久了，而且利用条件很低，目测只要有敏感接口并且设置了<code>Access-Control-Allow-Origin:*</code>，那么这个接口就变成了一个在Chrome浏览器下接近于csrf漏洞。<br>比较一下这个漏洞和jsonp、csrf的差别：<h3 id="jsonp"><a href="#jsonp" class="headerlink" title="jsonp"></a>jsonp</h3>得存在callback的jsonp接口，存在这种接口，并且会根据cookies返回敏感信息，因为script标签会传递cookies所以就变成了csrf，防范手段也和csrf类似，但接口必须是支持jsonp格式的json接口<h3 id="一般csrf"><a href="#一般csrf" class="headerlink" title="一般csrf"></a>一般csrf</h3>一般的csrf通常是构造html表单并自动提交，通常是触发特定动作而不能获取到数据<h3 id="这个缓存漏洞"><a href="#这个缓存漏洞" class="headerlink" title="这个缓存漏洞"></a>这个缓存漏洞</h3>一般的通过js去拉取数据需要cors配置为<code>Access-Control-Allow-Origin: 某域名</code>且credentials设置true，利用该第三方域名可控来获取敏感数据，但如果配合Chrome缓存问题，可以把这个origin扩大到任意域名，但有个潜在的条件是需要用户先访问目标接口后缓存了页面数据，才可以读取该接口的返回数据。换句话说利用条件：</li>
+<li>当不设置时默认为null，即拒绝除本域以外所有的域名<h2 id="0x02-与csrf相比"><a href="#0x02-与csrf相比" class="headerlink" title="0x02 与csrf相比"></a>0x02 与csrf相比</h2>如果文中所说的属实，那么这个漏洞存在应该很久了，而且利用条件很低，目测只要有敏感接口并且设置了<code>Access-Control-Allow-Origin:*</code>，那么这个接口就变成了一个在Chrome浏览器下接近于csrf漏洞。<br>比较一下这个漏洞和jsonp、csrf的差别：<h3 id="jsonp"><a href="#jsonp" class="headerlink" title="jsonp"></a>jsonp</h3>得存在callback的jsonp接口，存在这种接口，并且会根据cookies返回敏感信息，因为script标签会传递cookies所以就变成了csrf，防范手段也和csrf类似，但接口必须是支持jsonp格式的json接口<h3 id="一般csrf"><a href="#一般csrf" class="headerlink" title="一般csrf"></a>一般csrf</h3>一般的csrf通常是构造html表单并自动提交，通常是触发特定动作而不能获取到数据<h3 id="这个缓存漏洞"><a href="#这个缓存漏洞" class="headerlink" title="这个缓存漏洞"></a>这个缓存漏洞</h3>一般的通过js去拉取数据需要cors配置为<code>Access-Control-Allow-Origin: 某域名</code>且credentials设置true，利用该第三方域名可控来获取敏感数据，但如果配合Chrome缓存问题，可以把这个origin扩大到任意域名，但有个潜在的条件是需要用户先访问目标接口后缓存了页面数据，才可以读取该接口的返回数据。换句话说利用条件：</li>
 <li>没有csrf防御</li>
 <li>存在敏感信息或有利用价值的东西</li>
 <li>origin为星号</li>
 <li>用户在这之前用Chrome浏览器访问过该接口</li>
+<li>默认浏览器都会存在缓存，除非设置为cache-control为max-age=0或者是no-store<h2 id="0x03-关于缓存"><a href="#0x03-关于缓存" class="headerlink" title="0x03 关于缓存"></a>0x03 关于缓存</h2></li>
+<li>Cache-control头部会设置强缓存相关配置</li>
+<li>在没有设置cache-control头部时，因为Response Header 存在 Date、Last-Modified浏览器使用LM factor 算法在没有 Cache-Control 以及 Expires 的时候，用来计算应该强制缓存多长时间所以状态码返回还是200 不是 304，如果什么缓存策略都没设置，浏览器会采用一个启发式的算法，通常会取响应头中的 Date 减去 Last-Modified 值的 10% 作为缓存时间。</li>
+<li>命中缓存应该只需要url一致即可</li>
 </ol>
 
       
@@ -431,6 +435,10 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2020/03/25/用友ERP的XXE/" rel="prev" title="用友ERP的XXE">
+                用友ERP的XXE <i class="fa fa-chevron-right"></i>
+              </a>
             
           </div>
         </div>
@@ -509,7 +517,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">18</span>
+                  <span class="site-state-item-count">25</span>
                   <span class="site-state-item-name">posts</span>
                 </a>
               </div>
@@ -520,7 +528,7 @@
               
               <div class="site-state-item site-state-categories">
                 <a href="/categories/index.html">
-                  <span class="site-state-item-count">12</span>
+                  <span class="site-state-item-count">17</span>
                   <span class="site-state-item-name">categories</span>
                 </a>
               </div>
@@ -531,7 +539,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">20</span>
+                  <span class="site-state-item-count">26</span>
                   <span class="site-state-item-name">tags</span>
                 </a>
               </div>
@@ -585,7 +593,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0x00-起因"><span class="nav-number">1.</span> <span class="nav-text">0x00 起因</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x01-前提"><span class="nav-number">2.</span> <span class="nav-text">0x01 前提</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x02-想法"><span class="nav-number">3.</span> <span class="nav-text">0x02 想法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#jsonp"><span class="nav-number">3.1.</span> <span class="nav-text">jsonp</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#一般csrf"><span class="nav-number">3.2.</span> <span class="nav-text">一般csrf</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#这个缓存漏洞"><span class="nav-number">3.3.</span> <span class="nav-text">这个缓存漏洞</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0x00-起因"><span class="nav-number">1.</span> <span class="nav-text">0x00 起因</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x01-前提"><span class="nav-number">2.</span> <span class="nav-text">0x01 前提</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x02-与csrf相比"><span class="nav-number">3.</span> <span class="nav-text">0x02 与csrf相比</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#jsonp"><span class="nav-number">3.1.</span> <span class="nav-text">jsonp</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#一般csrf"><span class="nav-number">3.2.</span> <span class="nav-text">一般csrf</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#这个缓存漏洞"><span class="nav-number">3.3.</span> <span class="nav-text">这个缓存漏洞</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x03-关于缓存"><span class="nav-number">4.</span> <span class="nav-text">0x03 关于缓存</span></a></li></ol></div>
             
 
           </div>

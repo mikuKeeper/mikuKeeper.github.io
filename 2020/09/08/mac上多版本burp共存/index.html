@@ -68,7 +68,7 @@
 
 
 
-  <meta name="keywords" content="浏览器,">
+  <meta name="keywords" content="系统,">
 
 
 
@@ -81,18 +81,26 @@
 
 
 
-<meta name="description" content="0x00 起因Chrome缓存和CORS这个文章里记录的Chrome缓存存在问题，在Access-Control-Allow-Origin:* 且Access-Control-Allow-Credentials: false的情况下可能可以获取到敏感信息（credentials可能是true也行）， 0x01 前提先说一下关于这两个头部值的一些问题：  当Access-Control-Allow-">
-<meta name="keywords" content="浏览器">
+<meta name="description" content="#0x00 背景某天群里有人问mac上如何共存多个版本的burp，大家都知道这个问题的本质是多版本jdk来驱动burp的问题，本来想想只需要更改环境变量来切换不同的java_home就好了吧，但其实好像并没有那么简单 #0x01 常规尝试首先我们要实现的是希望有多个burp的app图标，然后每个burp的图标点击就能启动不同的burp类似于：要实现这个我们得用到mac自带的automator：这玩">
+<meta name="keywords" content="系统">
 <meta property="og:type" content="article">
-<meta property="og:title" content="记一个frida调试瑞幸的过程">
-<meta property="og:url" content="http://yoursite.com/2020/01/13/关于CORS的一些记录/index.html">
+<meta property="og:title" content="mac上多版本burp共存">
+<meta property="og:url" content="http://yoursite.com/2020/09/08/mac上多版本burp共存/index.html">
 <meta property="og:site_name" content="少女的泪">
-<meta property="og:description" content="0x00 起因Chrome缓存和CORS这个文章里记录的Chrome缓存存在问题，在Access-Control-Allow-Origin:* 且Access-Control-Allow-Credentials: false的情况下可能可以获取到敏感信息（credentials可能是true也行）， 0x01 前提先说一下关于这两个头部值的一些问题：  当Access-Control-Allow-">
+<meta property="og:description" content="#0x00 背景某天群里有人问mac上如何共存多个版本的burp，大家都知道这个问题的本质是多版本jdk来驱动burp的问题，本来想想只需要更改环境变量来切换不同的java_home就好了吧，但其实好像并没有那么简单 #0x01 常规尝试首先我们要实现的是希望有多个burp的app图标，然后每个burp的图标点击就能启动不同的burp类似于：要实现这个我们得用到mac自带的automator：这玩">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2020-03-09T06:53:32.983Z">
+<meta property="og:image" content="https://i.loli.net/2020/09/08/I3G1FTeSPfl7m5r.jpg">
+<meta property="og:image" content="https://i.loli.net/2020/09/08/FcubE4zUofhdyYT.jpg">
+<meta property="og:image" content="https://i.loli.net/2020/09/08/ZfjaUd6stJzNVyA.jpg">
+<meta property="og:image" content="https://i.loli.net/2020/09/08/pJ42GTiS1yNcCtk.jpg">
+<meta property="og:image" content="https://i.loli.net/2020/09/08/hSLgkeiQZGRBd8P.jpg">
+<meta property="og:image" content="https://i.loli.net/2020/09/08/tkycv6TJ1eESOQN.jpg">
+<meta property="og:image" content="https://i.loli.net/2020/09/08/LBgd26cIWOGeDNY.jpg">
+<meta property="og:updated_time" content="2020-09-08T15:33:26.800Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="记一个frida调试瑞幸的过程">
-<meta name="twitter:description" content="0x00 起因Chrome缓存和CORS这个文章里记录的Chrome缓存存在问题，在Access-Control-Allow-Origin:* 且Access-Control-Allow-Credentials: false的情况下可能可以获取到敏感信息（credentials可能是true也行）， 0x01 前提先说一下关于这两个头部值的一些问题：  当Access-Control-Allow-">
+<meta name="twitter:title" content="mac上多版本burp共存">
+<meta name="twitter:description" content="#0x00 背景某天群里有人问mac上如何共存多个版本的burp，大家都知道这个问题的本质是多版本jdk来驱动burp的问题，本来想想只需要更改环境变量来切换不同的java_home就好了吧，但其实好像并没有那么简单 #0x01 常规尝试首先我们要实现的是希望有多个burp的app图标，然后每个burp的图标点击就能启动不同的burp类似于：要实现这个我们得用到mac自带的automator：这玩">
+<meta name="twitter:image" content="https://i.loli.net/2020/09/08/I3G1FTeSPfl7m5r.jpg">
 
 
 
@@ -122,13 +130,13 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/2020/01/13/关于CORS的一些记录/">
+  <link rel="canonical" href="http://yoursite.com/2020/09/08/mac上多版本burp共存/">
 
 
 
 
 
-  <title>记一个frida调试瑞幸的过程 | 少女的泪</title>
+  <title>mac上多版本burp共存 | 少女的泪</title>
   
 
 
@@ -292,7 +300,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/01/13/关于CORS的一些记录/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/09/08/mac上多版本burp共存/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="JOJO">
@@ -309,7 +317,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">记一个frida调试瑞幸的过程</h1>
+          <h1 class="post-title" itemprop="name headline">mac上多版本burp共存</h1>
         
 
         <div class="post-meta">
@@ -321,8 +329,8 @@
               
                 <span class="post-meta-item-text">Posted on</span>
               
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-01-13T13:21:30+08:00">
-                2020-01-13
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-09-08T22:40:30+08:00">
+                2020-09-08
               </time>
             
 
@@ -344,8 +352,8 @@
               
               
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/web安全/" itemprop="url" rel="index">
-                    <span itemprop="name">web安全</span>
+                  <a href="/categories/web/" itemprop="url" rel="index">
+                    <span itemprop="name">web</span>
                   </a>
                 </span>
 
@@ -381,16 +389,16 @@
       
 
       
-        <h2 id="0x00-起因"><a href="#0x00-起因" class="headerlink" title="0x00 起因"></a>0x00 起因</h2><p><a href="https://b.cp0.win/chrome%E6%B5%8F%E8%A7%88%E5%99%A8%E9%85%8D%E5%90%88CORS%E9%85%8D%E7%BD%AE%E9%97%AE%E9%A2%98%E5%B8%A6%E6%9D%A5%E7%9A%84%E6%96%B0%E6%94%BB%E5%87%BB%E9%9D%A2.php" target="_blank" rel="noopener">Chrome缓存和CORS</a>这个文章里记录的Chrome缓存存在问题，在<code>Access-Control-Allow-Origin:* 且Access-Control-Allow-Credentials: false</code>的情况下可能可以获取到敏感信息（credentials可能是true也行），</p>
-<h2 id="0x01-前提"><a href="#0x01-前提" class="headerlink" title="0x01 前提"></a>0x01 前提</h2><p>先说一下关于这两个头部值的一些问题：</p>
+        <p>#0x00 背景<br>某天群里有人问mac上如何共存多个版本的burp，大家都知道这个问题的本质是多版本jdk来驱动burp的问题，本来想想只需要更改环境变量来切换不同的java_home就好了吧，但其实好像并没有那么简单</p>
+<p>#0x01 常规尝试<br>首先我们要实现的是希望有多个burp的app图标，然后每个burp的图标点击就能启动不同的burp类似于：<br><img src="https://i.loli.net/2020/09/08/I3G1FTeSPfl7m5r.jpg" alt><br>要实现这个我们得用到mac自带的automator：<br><img src="https://i.loli.net/2020/09/08/FcubE4zUofhdyYT.jpg" alt><br>这玩意是真的好用，可以将很多命令操作或者宏打包成一个app，我们现在要用的是打包一个shell脚本，思路很简单，通过automator的shell，编写通过shell的方式运行指定的burploader就行：<br><img src="https://i.loli.net/2020/09/08/ZfjaUd6stJzNVyA.jpg" alt><br>类似于这样，就可以打包成一个app，然后就自动打开burp了<br>好了回到正题，正常思路下我们可能会想到通过在shell里指定运行的java命令的版本就行，比如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd /Users/miku/Documents/hack/attack-tools/burpsuite/Burp2020.91</span><br><span class="line">xxx/xxx/xx/jdk14/bin/java -jar Loader.jar</span><br></pre></td></tr></table></figure></p>
+<p>看似可行，实则不行</p>
+<p>##0x02 问题分析<br>其实我们在shell里指定特定版本的java来运行loader的时候，这个loader确实是以该版本的java来运行的，我们要知道，loader只是为了破解，真正运行burp本身程序的是loader通过调用命令来运行的。loader调用命令的时候执行的是：<br><img src="https://i.loli.net/2020/09/08/pJ42GTiS1yNcCtk.jpg" alt><br>可以看到loader执行的依旧是“java”，也就是没有指定特定路径的java，那么他肯定是从环境变量去查找java，找到的那个Java是什么版本就是什么版本。那么问题来了，我们在shell里加入环境变量可不可行？<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">export JAVA_HOME=xxxx/xxx/xxx/jdk14</span><br><span class="line">export PATH=xxxx/xxx/xxxx/bin:$PATH</span><br><span class="line">cd /Users/miku/Documents/hack/attack-tools/burpsuite/Burp2020.91</span><br><span class="line">xxx/xxx/xx/jdk14/bin/java -jar Loader.jar</span><br></pre></td></tr></table></figure></p>
+<p>看起来可行，但是我试了，不行，看起来是这个环境变量只被loader继承了，并没有影响到loader调用命令时候的“java”，网上查了查，感觉讲的都不太靠谱，不深究，结果看来是依然调用的是系统本身的环境变量指向的java，也就是我本机老的1.8版本，那咋整呢？<br>我试过修改/usr/libexec/java_home这个玩意管理的javahome，将jdk14放入到目录<code>/Library/Java/JavaVirtualMachines/</code>并修改iplist的优先级，这会改变系统默认的jdk版本，重启后确实会生效，但是这个太脑残了</p>
+<p>##0x03 换个思路<br>环境变量这个坑不想搞了，万一系统搞坏了也挺傻逼的，那怎么办呢？<br>既然通过指定jdk路径里的java来执行可以成功，那我们能不能把loader里面的java命令改成特定jdk里的java来运行burp呢？确实可以<br>首先，我们用jd-gui打开loader.jar<br><img src="https://i.loli.net/2020/09/08/hSLgkeiQZGRBd8P.jpg" alt><br>(红线部分是loader里run的那个命令，这里的java路径已经被我修改过了，没有修改的情况下应该就是写这个java)<br>我们可以看到jd已经帮我们反编译了，但是我们不能直接在jd里修改，那么我们先保存，保存后jd会保存为源码的形式<br>再获得保存的源码后，我们用idea创建一个java工程，然后把这些源码放到src里<br><img src="https://i.loli.net/2020/09/08/tkycv6TJ1eESOQN.jpg" alt><br>修改划线部分，指定jdk14里的java来执行后续的burp<br>修改完毕后，最重要的是编译了，要想完整的编译可能会有一大堆问题，反正我没有直接build项目成功过。<br>这边建议只编译enjoy.reversing.me这个包（右键点击包名选择单独构建），这样报错少，我这边就报了一个错，根据提示改一下就编译成功了<br>接下来只需要将我们需要的keygendialog.class文件即修改过编译好的class文件复制出来<br><img src="https://i.loli.net/2020/09/08/LBgd26cIWOGeDNY.jpg" alt><br>最后比较简单了，将原先的loader.jar用zip解压缩后，用上面的class替换同名class文件，然后重新压缩成zip后将后缀改为jar即可<br>修改后的jar包经过测试可以正常以特定的java来运行burp了，也不需要去修改系统的java版本了，很环保很开心。<br>剩下的就是回到最初用automator来做一个启动app即可</p>
+<p>##0x04 总结</p>
 <ol>
-<li>当<code>Access-Control-Allow-Origin:*</code>时，credentials不能设置为true，设置为true可能会报错？（不确定），可以设置为false，设置为false不报错，不设置默认应该也是false，即允许任何域时不允许ajax请求传递敏感头部</li>
-<li>当<code>Access-Control-Allow-Origin: 某域名</code>时，credentials设置true则是常见的配置漏洞，设置为false时浏览器如果发起ajax时设置withcredentials为true则报错</li>
-<li>当不设置时默认为null，即拒绝除本域以外所有的域名<h2 id="0x02-想法"><a href="#0x02-想法" class="headerlink" title="0x02 想法"></a>0x02 想法</h2>如果文中所说的属实，那么这个漏洞存在应该很久了，而且利用条件很低，目测只要有敏感接口并且设置了<code>Access-Control-Allow-Origin:*</code>，那么这个接口就变成了一个在Chrome浏览器下接近于csrf漏洞。<br>比较一下这个漏洞和jsonp、csrf的差别：<h3 id="jsonp"><a href="#jsonp" class="headerlink" title="jsonp"></a>jsonp</h3>得存在callback的jsonp接口，存在这种接口，并且会根据cookies返回敏感信息，因为script标签会传递cookies所以就变成了csrf，防范手段也和csrf类似，但接口必须是支持jsonp格式的json接口<h3 id="一般csrf"><a href="#一般csrf" class="headerlink" title="一般csrf"></a>一般csrf</h3>一般的csrf通常是构造html表单并自动提交，通常是触发特定动作而不能获取到数据<h3 id="这个缓存漏洞"><a href="#这个缓存漏洞" class="headerlink" title="这个缓存漏洞"></a>这个缓存漏洞</h3>一般的通过js去拉取数据需要cors配置为<code>Access-Control-Allow-Origin: 某域名</code>且credentials设置true，利用该第三方域名可控来获取敏感数据，但如果配合Chrome缓存问题，可以把这个origin扩大到任意域名，但有个潜在的条件是需要用户先访问目标接口后缓存了页面数据，才可以读取该接口的返回数据。换句话说利用条件：</li>
-<li>没有csrf防御</li>
-<li>存在敏感信息或有利用价值的东西</li>
-<li>origin为星号</li>
-<li>用户在这之前用Chrome浏览器访问过该接口</li>
+<li>环境变量这个问题还是没怎么搞清楚，找个时间再看看，也可能有更科学的方式来做这个事情吧</li>
+<li>很多事情还是要多试试才知道，脑补不太可行</li>
 </ol>
 
       
@@ -409,7 +417,7 @@
       
         <div class="post-tags">
           
-            <a href="/tags/浏览器/" rel="tag"># 浏览器</a>
+            <a href="/tags/系统/" rel="tag"># 系统</a>
           
         </div>
       
@@ -422,8 +430,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2020/01/13/记一个frida调试瑞幸的过程/" rel="next" title="记一个frida调试瑞幸的过程">
-                <i class="fa fa-chevron-left"></i> 记一个frida调试瑞幸的过程
+              <a href="/2020/08/21/一次对hexo加密文章的解密试探/" rel="next" title="一次对hexo加密文章的解密尝试">
+                <i class="fa fa-chevron-left"></i> 一次对hexo加密文章的解密尝试
               </a>
             
           </div>
@@ -482,17 +490,8 @@
       
 
       
-        <ul class="sidebar-nav motion-element">
-          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
-            Table of Contents
-          </li>
-          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
-            Overview
-          </li>
-        </ul>
-      
 
-      <section class="site-overview-wrap sidebar-panel">
+      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
@@ -509,7 +508,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">18</span>
+                  <span class="site-state-item-count">25</span>
                   <span class="site-state-item-name">posts</span>
                 </a>
               </div>
@@ -520,7 +519,7 @@
               
               <div class="site-state-item site-state-categories">
                 <a href="/categories/index.html">
-                  <span class="site-state-item-count">12</span>
+                  <span class="site-state-item-count">17</span>
                   <span class="site-state-item-name">categories</span>
                 </a>
               </div>
@@ -531,7 +530,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">20</span>
+                  <span class="site-state-item-count">26</span>
                   <span class="site-state-item-name">tags</span>
                 </a>
               </div>
@@ -575,22 +574,6 @@
         </div>
       </section>
 
-      
-      <!--noindex-->
-        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
-          <div class="post-toc">
-
-            
-              
-            
-
-            
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#0x00-起因"><span class="nav-number">1.</span> <span class="nav-text">0x00 起因</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x01-前提"><span class="nav-number">2.</span> <span class="nav-text">0x01 前提</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x02-想法"><span class="nav-number">3.</span> <span class="nav-text">0x02 想法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#jsonp"><span class="nav-number">3.1.</span> <span class="nav-text">jsonp</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#一般csrf"><span class="nav-number">3.2.</span> <span class="nav-text">一般csrf</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#这个缓存漏洞"><span class="nav-number">3.3.</span> <span class="nav-text">这个缓存漏洞</span></a></li></ol></li></ol></div>
-            
-
-          </div>
-        </section>
-      <!--/noindex-->
       
 
       

@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon.ico?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="JavaScript,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="少女的泪" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="#0x00背景某天群里分享了一个大佬的博客，文章都是很棒的，但是最新的文章都使用Hexo-Blog-Encrypt，网上基本也都推荐这个插件进行加密文章。那么我们想看文章又不知道密码，怎么办呢？ #0x01思路一开始觉得至少先试试爆破吧，但是打开burp发现输入密码的过程是前端js的解密流程，并不存在提交到服务端的请求包，所以burp的常规爆破就不行了。那基本的思路就是这样：  先看看加解密代码，">
+<meta name="keywords" content="JavaScript">
+<meta property="og:type" content="article">
+<meta property="og:title" content="一次对hexo加密文章的解密尝试">
+<meta property="og:url" content="http://yoursite.com/2020/08/21/一次对hexo加密文章的解密试探/index.html">
+<meta property="og:site_name" content="少女的泪">
+<meta property="og:description" content="#0x00背景某天群里分享了一个大佬的博客，文章都是很棒的，但是最新的文章都使用Hexo-Blog-Encrypt，网上基本也都推荐这个插件进行加密文章。那么我们想看文章又不知道密码，怎么办呢？ #0x01思路一开始觉得至少先试试爆破吧，但是打开burp发现输入密码的过程是前端js的解密流程，并不存在提交到服务端的请求包，所以burp的常规爆破就不行了。那基本的思路就是这样：  先看看加解密代码，">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="https://i.loli.net/2020/08/20/LCGHNFjl5bKfRiD.jpg">
+<meta property="og:image" content="https://i.loli.net/2020/08/20/tWinjOeXBd87g25.jpg">
+<meta property="og:image" content="https://i.loli.net/2020/08/20/1CBnE35hUDJvOso.jpg">
+<meta property="og:image" content="https://i.loli.net/2020/08/20/CskZtlT4BzyJwuW.jpg">
+<meta property="og:updated_time" content="2020-08-20T10:27:14.859Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="一次对hexo加密文章的解密尝试">
+<meta name="twitter:description" content="#0x00背景某天群里分享了一个大佬的博客，文章都是很棒的，但是最新的文章都使用Hexo-Blog-Encrypt，网上基本也都推荐这个插件进行加密文章。那么我们想看文章又不知道密码，怎么办呢？ #0x01思路一开始觉得至少先试试爆破吧，但是打开burp发现输入密码的过程是前端js的解密流程，并不存在提交到服务端的请求包，所以burp的常规爆破就不行了。那基本的思路就是这样：  先看看加解密代码，">
+<meta name="twitter:image" content="https://i.loli.net/2020/08/20/LCGHNFjl5bKfRiD.jpg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2020/08/21/一次对hexo加密文章的解密试探/">
+
+
+
+
+
+  <title>一次对hexo加密文章的解密尝试 | 少女的泪</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="default">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+
+<div class="header-banner-img-bottom"><img src="/images/overlay-hero.png" style="width:100%;"></div>
+<div class="header-banner-img-main-container"><div class="header-banner-img-main-img"><img src="/images/main-bk.png"></div></div>
+
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">少女的泪</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">是物语的开始</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+ </div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            Categories
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            Tags
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            Archives
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            Search
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="Searching..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/08/21/一次对hexo加密文章的解密试探/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="JOJO">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/touxiang.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="少女的泪">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">一次对hexo加密文章的解密尝试</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2020-08-21T20:40:30+08:00">
+                2020-08-21
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/web/" itemprop="url" rel="index">
+                    <span itemprop="name">web</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>#0x00背景<br>某天群里分享了一个大佬的博客，文章都是很棒的，但是最新的文章都使用Hexo-Blog-Encrypt，网上基本也都推荐这个插件进行加密文章。那么我们想看文章又不知道密码，怎么办呢？</p>
+<p>#0x01思路<br>一开始觉得至少先试试爆破吧，但是打开burp发现输入密码的过程是前端js的解密流程，并不存在提交到服务端的请求包，所以burp的常规爆破就不行了。<br>那基本的思路就是这样：</p>
+<ol>
+<li>先看看加解密代码，如果代码比较垃圾可能可以绕过</li>
+<li>如果是正常的对称加密，则考虑爆破</li>
+<li>爆破可以浏览器模拟也可以其他语言重新加解密函数提高爆破速度</li>
+</ol>
+<p>#0x02先看js<br>由于博客是托管在GitHub上的，所以直接通过github克隆一份下来在本地会比较简单一些，当然直接打开也可以（由于特殊原因该博客必须克隆）<br>略过一些查找的过程，我们很快就找到了加解密的js文件<br><img src="https://i.loli.net/2020/08/20/LCGHNFjl5bKfRiD.jpg" alt><br>文件路径是xxx.com/lib/blog-encrypt.js<br>基本上可以看到使用了aes-cbc 256位加密，使用sha-256进行hash校验，只要写的没有太大问题应该不存在绕过的方式，基本上目前我只能使用爆破的方法了</p>
+<p>#0x03爆破前置准备<br>目前我打算直接使用js来进行爆破，爆破的流程基本上是：<br>前端提交密码字典文件-&gt;解析成字典-&gt;js直接提交密码触发对应解密函数-&gt;构造解密成功和失败的结果显示<br>逻辑想好了，这里介绍几个基本的知识点</p>
+<p>##chrome浏览器override<br>devtools里有个override功能可以用本地的js脚本替代页面上的原脚本<br>功能路径：sources-&gt;overrides<br><img src="https://i.loli.net/2020/08/20/tWinjOeXBd87g25.jpg" alt><br>这个功能的操作基本上就是先开启这个功能，然后以后在source-&gt;page里修改了某个js，就会直接在overrides里生成一个修改过的js做替换，后续只要修改overrides里的替换文件就会在对应网站里生效，哪怕是关掉浏览器下次访问也一样会以本地修改文件来生效，还是很靠谱的。</p>
+<p>##tampermonkey脚本的基本使用<br>这个也没什么好说的，会大致写就行，其实本质上就是在页面加载完成后（顺序可以设置）在页面上执行额外的自定义脚本，我们的主要爆破程序是写在这里的</p>
+<p>#0x04编写爆破脚本<br>编写的时候涉及到不少的问题，比如：</p>
+<ol>
+<li>输入密码错误的时候会弹窗提示，alert会中断所有脚本的执行，所以需要在js里把对应的alert给干掉，大部分都在那个encrypt脚本里自己找一下就行</li>
+<li>解密成功但是校验失败会输出乱码，不太懂这什么原因，部分密码输入都会出现这种问题，通过修改一些判断逻辑使这个不影响爆破</li>
+<li>页面输入框会在一些情况下被替换掉导致中断爆破，因此如果解密成功或者校验失败，使其作用于一个新的元素避免影响输入框<br>直接贴爆破脚本好了，我懒得分析一些细节，而且我目前还没有爆破出密码，也不太确定是不是哪里有问题，不过思路可以参考一下</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br></pre></td><td class="code"><pre><span class="line">// ==UserScript==</span><br><span class="line">// @name         解密hexo</span><br><span class="line">// @namespace    http://tampermonkey.net/</span><br><span class="line">// @version      0.1</span><br><span class="line">// @description  try to take over the world!</span><br><span class="line">// @author       You</span><br><span class="line">// @match        http://127.0.0.1:8000/*</span><br><span class="line">// @grant        none</span><br><span class="line">//@run-at document-end</span><br><span class="line">// ==/UserScript==</span><br><span class="line"></span><br><span class="line">(function() &#123;</span><br><span class="line">    &apos;use strict&apos;;</span><br><span class="line">    //创建一个元素用于上传密码字典</span><br><span class="line">    var uploadfile = document.createElement(&apos;input&apos;);</span><br><span class="line">    uploadfile.type=&quot;file&quot;;</span><br><span class="line">    uploadfile.id=&quot;file_id&quot;;</span><br><span class="line">    //在上传字典后调用readFile函数</span><br><span class="line">    uploadfile.onchange= readFile;</span><br><span class="line">    document.body.appendChild(uploadfile);</span><br><span class="line">    //创建ui事件用于向密码输入框发送keydown事件</span><br><span class="line">    var event = document.createEvent(&apos;UIEvents&apos;);</span><br><span class="line">    event.initUIEvent(&quot;keydown&quot;,false,true,null);</span><br><span class="line">    event.keyCode=13;</span><br><span class="line">    var passwords = &quot;&quot;;</span><br><span class="line">    var i =0;</span><br><span class="line"></span><br><span class="line">    function readFile() &#123;</span><br><span class="line">        //获取文件内容判断是否为空不为空读取文件内容</span><br><span class="line">        const objFile = document.getElementById(&apos;file_id&apos;);</span><br><span class="line">        if(objFile.value === &apos;&apos;) &#123;</span><br><span class="line">          alert(&apos;请选择文件！&apos;);</span><br><span class="line">          return;</span><br><span class="line">        &#125;</span><br><span class="line">        // 获取文件</span><br><span class="line">        const files = objFile.files;</span><br><span class="line">        // 新建一个FileReader</span><br><span class="line">        const reader = new FileReader();</span><br><span class="line">        // 读取文件</span><br><span class="line">        reader.readAsText(files[0], &quot;UTF-8&quot;);</span><br><span class="line">        // 读取完文件之后会回来这里</span><br><span class="line">        reader.onload = function(e)&#123;</span><br><span class="line">          // 读取文件内容</span><br><span class="line">          const fileString = e.target.result;</span><br><span class="line">          //读取出来的文件内容是纯文本未分行的，下面根据换行分割成数组</span><br><span class="line">          const fileString2 = e.target.result.split(&apos;\n&apos;);</span><br><span class="line">          //打印内容助于排错</span><br><span class="line">          console.log(fileString2);</span><br><span class="line">          passwords = fileString2;</span><br><span class="line">          //加个timeout主要是我怕读文件太慢，异步所以稳一点</span><br><span class="line">          setTimeout(function()&#123;</span><br><span class="line">            if(passwords!=&quot;&quot;)&#123;</span><br><span class="line">                //通过interval来控制速度，同样因为异步，怕出错所以用了interval降低速度</span><br><span class="line">                var inter = setInterval(function()&#123;</span><br><span class="line">                    //使用debug来输出每次密码，用于排错和知道进度，因为debug的信息可以隐藏</span><br><span class="line">                    console.debug(passwords[i]);</span><br><span class="line">//设置密码空间的值为密码，并且发送keydown事件触发解密函数                  document.getElementById(&quot;hbePass&quot;).value=passwords[i];</span><br><span class="line">                    document.getElementById(&apos;hexo-blog-encrypt&apos;).dispatchEvent(event);</span><br><span class="line">                      setTimeout(function()&#123;</span><br><span class="line">                          if(i&lt;passwords.length)&#123;</span><br><span class="line">                              i++;</span><br><span class="line">                          &#125;</span><br><span class="line">                      &#125;,20);</span><br><span class="line">                      //passwords是全局变量，这里通过控制i的自增来遍历passwords</span><br><span class="line">                      if(i==passwords.length)&#123;</span><br><span class="line">                      //当密码爆破完中断interval</span><br><span class="line">                          clearInterval(inter);</span><br><span class="line">                      &#125;</span><br><span class="line">                &#125;,5);</span><br><span class="line">            &#125;</span><br><span class="line">          &#125;,500);</span><br><span class="line"></span><br><span class="line">        &#125;;</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    // Your code here...</span><br><span class="line">&#125;)();</span><br></pre></td></tr></table></figure>
+<p>#0x05效果<br><img src="https://i.loli.net/2020/08/20/1CBnE35hUDJvOso.jpg" alt><br>这里加了个上传文件的input，上传完就开始自动爆破<br><img src="https://i.loli.net/2020/08/20/CskZtlT4BzyJwuW.jpg" alt><br>如果我前面的调整没有问题，那么爆破正确的话console.log会输出正确正文<br>不过到我写完文章我也没有爆破成功- -</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/JavaScript/" rel="tag"># JavaScript</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/06/21/JS调试技巧/" rel="next" title="js调试技巧">
+                <i class="fa fa-chevron-left"></i> js调试技巧
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2020/09/08/mac上多版本burp共存/" rel="prev" title="mac上多版本burp共存">
+                mac上多版本burp共存 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/touxiang.png" alt="JOJO">
+            
+              <p class="site-author-name" itemprop="name">JOJO</p>
+              <p class="site-description motion-element" itemprop="description">如果有一天我不再中二，变的和蔼可亲善解人意，那一定是我失去了最后的坚持变得安于平凡。那么请认识我的人清明的时候顺带为我上柱香，毕竟这个男人已经死了。</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">25</span>
+                  <span class="site-state-item-name">posts</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">17</span>
+                  <span class="site-state-item-name">categories</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">26</span>
+                  <span class="site-state-item-name">tags</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-block">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                Blogroll
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="https://www.sk15.net/" title="sk15" target="_blank">sk15</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">JOJO</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/three/three.min.js"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/three/canvas_sphere.min.js"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
